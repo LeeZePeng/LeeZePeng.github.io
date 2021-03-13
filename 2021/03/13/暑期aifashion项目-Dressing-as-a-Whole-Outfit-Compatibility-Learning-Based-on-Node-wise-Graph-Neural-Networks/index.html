@@ -22,28 +22,49 @@
     var CONFIG = {"hostname":"leezepeng.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
-  <meta property="og:type" content="website">
-<meta property="og:title" content="LeeZePeng&#39;s Blog">
-<meta property="og:url" content="https://leezepeng.github.io/index.html">
+  <meta name="description" content="国内外研究的不足：对兼容性的评估方法的不足： McAuley等人使用低秩马氏变换(LMT)将单品映射到一个潜在空间，在这个空间中，可兼容的物品距离更近。     Veit等人提出使用端到端SiameseCNNs学习距离度量。 还有一些研究将单品映射到多个潜在空间中，共同对这些潜在空间中的距离进行建模，从而可以衡量物品在不同方面的相容性。  这些方法都有一个共同的缺陷，这些工作只注重两两单品的搭配，">
+<meta property="og:type" content="article">
+<meta property="og:title" content="暑期aifashion项目-Dressing as a Whole: Outfit Compatibility Learning Based on Node-wise Graph Neural Networks">
+<meta property="og:url" content="https://leezepeng.github.io/2021/03/13/%E6%9A%91%E6%9C%9Faifashion%E9%A1%B9%E7%9B%AE-Dressing-as-a-Whole-Outfit-Compatibility-Learning-Based-on-Node-wise-Graph-Neural-Networks/index.html">
 <meta property="og:site_name" content="LeeZePeng&#39;s Blog">
+<meta property="og:description" content="国内外研究的不足：对兼容性的评估方法的不足： McAuley等人使用低秩马氏变换(LMT)将单品映射到一个潜在空间，在这个空间中，可兼容的物品距离更近。     Veit等人提出使用端到端SiameseCNNs学习距离度量。 还有一些研究将单品映射到多个潜在空间中，共同对这些潜在空间中的距离进行建模，从而可以衡量物品在不同方面的相容性。  这些方法都有一个共同的缺陷，这些工作只注重两两单品的搭配，">
 <meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2020/png/1842325/1597039788378-f0078c12-9f4f-4e65-9fc6-c8e23e0a2939.png?x-oss-process=image/resize,w_1028">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2020/png/1842325/1597041336396-d9edb972-43ea-4446-be4d-8e49eb75e0e1.png">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2020/png/1842325/1597042454519-cae580b3-bf84-442a-b563-29fd7cd4a43b.png?x-oss-process=image%2Fresize%2Cw_94">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2020/png/1842325/1597042590414-972c82f3-d1fc-4f85-8241-f868958bcf4b.png?x-oss-process=image%2Fresize%2Cw_124">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2020/png/1842325/1597043017623-6d1f1aa1-ce45-4254-ad5b-b5d3fb696a69.png">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2020/png/1842325/1597044053826-80e2fc73-aa1b-448b-a8ff-a6483a39ac2c.png">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2020/png/1842325/1597044189735-18d5a6a7-32b8-4678-afc8-57740688c62f.png?x-oss-process=image%2Fresize%2Cw_230">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2020/png/1842325/1597044826770-377b8f82-bdc4-4f9b-81e6-8e925d8600f9.png">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2020/png/1842325/1597044851756-51d9a66f-d276-48ec-b3bc-56cbc7ca6084.png">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2020/png/1842325/1597044984089-fd19368a-075c-4355-9fc1-ea85b0689c83.png">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2020/png/1842325/1597045007719-c7a16b2d-cea2-4428-9853-5b0f423083c0.png?x-oss-process=image%2Fresize%2Cw_244">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2020/png/1842325/1597045096603-7048b13e-b6a8-4f90-a2ee-48985596bd74.png">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2020/png/1842325/1597045122733-fa10bf83-9261-4ee0-bf6c-fb0a606a9bd1.png">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2020/png/1842325/1597045132882-289c08fa-7e5e-4263-a4c9-172323923dbe.png">
+<meta property="article:published_time" content="2021-03-13T07:20:30.000Z">
+<meta property="article:modified_time" content="2021-03-13T07:35:18.587Z">
 <meta property="article:author" content="LeeZePeng">
+<meta property="article:tag" content="aifashion">
+<meta property="article:tag" content="论文详解">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.nlark.com/yuque/0/2020/png/1842325/1597039788378-f0078c12-9f4f-4e65-9fc6-c8e23e0a2939.png?x-oss-process=image/resize,w_1028">
 
-<link rel="canonical" href="https://leezepeng.github.io/">
+<link rel="canonical" href="https://leezepeng.github.io/2021/03/13/%E6%9A%91%E6%9C%9Faifashion%E9%A1%B9%E7%9B%AE-Dressing-as-a-Whole-Outfit-Compatibility-Learning-Based-on-Node-wise-Graph-Neural-Networks/">
 
 
 <script id="page-configurations">
   // https://hexo.io/docs/variables.html
   CONFIG.page = {
     sidebar: "",
-    isHome : true,
-    isPost : false,
+    isHome : false,
+    isPost : true,
     lang   : 'zh-CN'
   };
 </script>
 
-  <title>LeeZePeng's Blog</title>
+  <title>暑期aifashion项目-Dressing as a Whole: Outfit Compatibility Learning Based on Node-wise Graph Neural Networks | LeeZePeng's Blog</title>
   
 
 
@@ -158,9 +179,10 @@
         <div class="content-wrap">
           
 
-          <div class="content index posts-expand">
+          <div class="content post posts-expand">
             
-      
+
+    
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
@@ -176,10 +198,9 @@
       <meta itemprop="name" content="LeeZePeng's Blog">
     </span>
       <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2021/03/13/%E6%9A%91%E6%9C%9Faifashion%E9%A1%B9%E7%9B%AE-Dressing-as-a-Whole-Outfit-Compatibility-Learning-Based-on-Node-wise-Graph-Neural-Networks/" class="post-title-link" itemprop="url">暑期aifashion项目-Dressing as a Whole: Outfit Compatibility Learning Based on Node-wise Graph Neural Networks</a>
-        </h2>
+        <h1 class="post-title" itemprop="name headline">
+          暑期aifashion项目-Dressing as a Whole: Outfit Compatibility Learning Based on Node-wise Graph Neural Networks
+        </h1>
 
         <div class="post-meta">
             <span class="post-meta-item">
@@ -192,7 +213,14 @@
               <time title="创建时间：2021-03-13 15:20:30 / 修改时间：15:35:18" itemprop="dateCreated datePublished" datetime="2021-03-13T15:20:30+08:00">2021-03-13</time>
             </span>
 
-          <br>
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
             <span class="post-meta-item" title="本文字数">
               <span class="post-meta-item-icon">
                 <i class="far fa-file-word"></i>
@@ -217,7 +245,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h2 id="国内外研究的不足："><a href="#国内外研究的不足：" class="headerlink" title="国内外研究的不足："></a>国内外研究的不足：</h2><h3 id="对兼容性的评估方法的不足："><a href="#对兼容性的评估方法的不足：" class="headerlink" title="对兼容性的评估方法的不足："></a>对兼容性的评估方法的不足：</h3><ul>
+        <h2 id="国内外研究的不足："><a href="#国内外研究的不足：" class="headerlink" title="国内外研究的不足："></a>国内外研究的不足：</h2><h3 id="对兼容性的评估方法的不足："><a href="#对兼容性的评估方法的不足：" class="headerlink" title="对兼容性的评估方法的不足："></a>对兼容性的评估方法的不足：</h3><ul>
 <li>McAuley等人使用低秩马氏变换(LMT)将单品映射到一个潜在空间，在这个空间中，可兼容的物品距离更近。    </li>
 <li>Veit等人提出使用端到端SiameseCNNs学习距离度量。</li>
 <li>还有一些研究将单品映射到多个潜在空间中，共同对这些潜在空间中的距离进行建模，从而可以衡量物品在不同方面的相容性。</li>
@@ -270,192 +298,56 @@
 <div align=center> <img src="https://cdn.nlark.com/yuque/0/2020/png/1842325/1597045122733-fa10bf83-9261-4ee0-bf6c-fb0a606a9bd1.png" width = 30%/><img src="https://cdn.nlark.com/yuque/0/2020/png/1842325/1597045132882-289c08fa-7e5e-4263-a4c9-172323923dbe.png" width = 30%/> </div>
 
 
-      
     </div>
 
     
     
     
+        <div class="reward-container">
+  <div>感谢支持！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.jpeg" alt="LeeZePeng 微信支付">
+        <p>微信支付</p>
+      </div>
+
+  </div>
+</div>
+
+
       <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
+          <div class="post-tags">
+              <a href="/tags/aifashion/" rel="tag"># aifashion</a>
+              <a href="/tags/%E8%AE%BA%E6%96%87%E8%AF%A6%E8%A7%A3/" rel="tag"># 论文详解</a>
+          </div>
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://leezepeng.github.io/2021/03/13/%E6%9A%91%E6%9C%9Faifashion%E9%A1%B9%E7%9B%AE-%E6%A8%A1%E5%9E%8B%E6%80%BB%E4%BD%93%E6%B5%81%E7%A8%8B/">
+        
 
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="LeeZePeng">
-      <meta itemprop="description" content="">
-    </span>
 
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="LeeZePeng's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2021/03/13/%E6%9A%91%E6%9C%9Faifashion%E9%A1%B9%E7%9B%AE-%E6%A8%A1%E5%9E%8B%E6%80%BB%E4%BD%93%E6%B5%81%E7%A8%8B/" class="post-title-link" itemprop="url">暑期aifashion项目-模型总体流程</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2021-03-13 15:04:48 / 修改时间：15:14:46" itemprop="dateCreated datePublished" datetime="2021-03-13T15:04:48+08:00">2021-03-13</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/aifasion/" itemprop="url" rel="index"><span itemprop="name">aifasion</span></a>
-                </span>
-            </span>
-
-          <br>
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="far fa-file-word"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>303</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="far fa-clock"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>1 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p><a target="_blank" rel="noopener" href="https://imgtu.com/i/6d2u7D"><img src="https://s3.ax1x.com/2021/03/13/6d2u7D.png" alt="6d2u7D.png"></a></p>
-<p>首先将人工标注与Polyvore数据集的知识融合获得知识图谱，与此同时利用残差神经网络分别提取人的上衣，下衣（或全身），脸形，体型对应的具体属性（如印花，方型脸）对应的特征向量，将具体属性在知识图谱中实例化（彩色即为实例化后的节点）并与知识图谱的特征向量拼接，获得第三层（黄色：具体特征层）所有节点结合了知识图谱语义信息和残差神经网络的图像信息的特征向量。对第三层利用GGNN模型进行信息传播与更新，更新T轮后利用Diff-Pooling的方法将第三层节点信息映射至第二层节点（橙色：单品层），最后将单品层所有节点的特征向量拼接，通过全连接神经网络计算出第一层（灰色：套装层）的Compability评分。</p>
-
-      
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/03/13/%E6%9A%91%E6%9C%9Faifashion%E9%A1%B9%E7%9B%AE-%E6%A8%A1%E5%9E%8B%E6%80%BB%E4%BD%93%E6%B5%81%E7%A8%8B/" rel="prev" title="暑期aifashion项目-模型总体流程">
+      <i class="fa fa-chevron-left"></i> 暑期aifashion项目-模型总体流程
+    </a></div>
+      <div class="post-nav-item"></div>
     </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
       </footer>
+    
   </article>
   
   
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://leezepeng.github.io/2021/03/13/hello-world/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="LeeZePeng">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="LeeZePeng's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2021/03/13/hello-world/" class="post-title-link" itemprop="url">新的开始</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2021-03-13 10:57:00 / 修改时间：11:04:41" itemprop="dateCreated datePublished" datetime="2021-03-13T10:57:00+08:00">2021-03-13</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%9D%82%E8%B0%88/" itemprop="url" rel="index"><span itemprop="name">杂谈</span></a>
-                </span>
-            </span>
-
-          <br>
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="far fa-file-word"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>159</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="far fa-clock"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>1 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>今天是博客诞生的第一天，先前的一些CSDN上，语雀上的博客会被整合进这里，从大一开始做了2年多的深度学习，很感谢指导我的老师以及师兄师姐们，在大三面临着读研还是工作的十字路口，我还是决定从现在开始记录我的java学习过程来应对秋招和夏令营，中间会穿插一些模型压缩的论文解析（每周论文汇报不能少），废话不多说，现在开始！</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-
   
 
 
 
           </div>
           
+    <div class="comments" id="gitalk-container"></div>
 
 <script>
   window.addEventListener('tabs:register', () => {
@@ -502,6 +394,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%BD%E5%86%85%E5%A4%96%E7%A0%94%E7%A9%B6%E7%9A%84%E4%B8%8D%E8%B6%B3%EF%BC%9A"><span class="nav-number">1.</span> <span class="nav-text">国内外研究的不足：</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AF%B9%E5%85%BC%E5%AE%B9%E6%80%A7%E7%9A%84%E8%AF%84%E4%BC%B0%E6%96%B9%E6%B3%95%E7%9A%84%E4%B8%8D%E8%B6%B3%EF%BC%9A"><span class="nav-number">1.1.</span> <span class="nav-text">对兼容性的评估方法的不足：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AF%B9%E5%8D%95%E5%93%81%E9%97%B4%E5%85%B3%E7%B3%BB%E8%A1%A8%E8%BE%BE%E7%9A%84%E4%B8%8D%E8%B6%B3%EF%BC%9A"><span class="nav-number">1.2.</span> <span class="nav-text">对单品间关系表达的不足：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AF%B9%E5%9B%BE%E7%BB%93%E6%9E%84%E6%95%B0%E6%8D%AE%E5%A4%84%E7%90%86%E6%96%B9%E5%BC%8F%E7%9A%84%E4%B8%8D%E8%B6%B3%EF%BC%9A"><span class="nav-number">1.3.</span> <span class="nav-text">对图结构数据处理方式的不足：</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%8A%82%E7%82%B9%E9%97%B4%E7%9A%84%E4%BF%A1%E6%81%AF%E4%BC%A0%E9%80%92%E9%97%AE%E9%A2%98%EF%BC%9A"><span class="nav-number">1.3.1.</span> <span class="nav-text">节点间的信息传递问题：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%9B%BE%E6%95%B0%E6%8D%AE%E5%A4%A7%E4%B8%94%E5%A4%8D%E6%9D%82%E5%AF%BC%E8%87%B4%E7%9A%84%E9%97%AE%E9%A2%98%EF%BC%9A"><span class="nav-number">1.3.2.</span> <span class="nav-text">图数据大且复杂导致的问题：</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%AC%E6%96%87%E7%9A%84%E8%B4%A1%E7%8C%AE"><span class="nav-number">2.</span> <span class="nav-text">本文的贡献</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B5%81%E7%A8%8B%E6%80%BB%E8%A7%88"><span class="nav-number">3.</span> <span class="nav-text">流程总览</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%BE%E7%9A%84%E6%9E%84%E5%BB%BA"><span class="nav-number">4.</span> <span class="nav-text">图的构建</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Node-wise-Graph-Neural-Network"><span class="nav-number">5.</span> <span class="nav-text">Node-wise Graph Neural Network</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%8A%82%E7%82%B9%E7%9A%84%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="nav-number">5.1.</span> <span class="nav-text">节点的初始化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%8A%82%E7%82%B9%E9%97%B4%E4%BF%A1%E6%81%AF%E4%BC%A0%E6%92%AD"><span class="nav-number">5.2.</span> <span class="nav-text">节点间信息传播</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9F%BA%E4%BA%8E%E6%B3%A8%E6%84%8F%E6%9C%BA%E5%88%B6%E7%9A%84%E5%85%BC%E5%AE%B9%E6%80%A7%E8%AE%A1%E7%AE%97"><span class="nav-number">5.3.</span> <span class="nav-text">基于注意机制的兼容性计算</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8D%9F%E5%A4%B1%E5%87%BD%E6%95%B0"><span class="nav-number">5.4.</span> <span class="nav-text">损失函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C%E7%BB%93%E6%9E%9C"><span class="nav-number">5.5.</span> <span class="nav-text">实验结果</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -657,6 +550,25 @@
 
   
 
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '43f3d7c5d73827d0ee37',
+      clientSecret: '838a9b66d5cf233f002289464ea0a474df67ce1d',
+      repo        : 'discuss',
+      owner       : 'LeeZePeng',
+      admin       : ['LeeZePeng'],
+      id          : 'beca836614c68cee09b4e7c330fbf4bd',
+        language: 'zh-CN',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
 
 </body>
 </html>
