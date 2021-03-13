@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-mac-osxs.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"leezepeng.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="DCRNN_PyTorch代码解析总体框架  data存放模型用到的数据。其中METR-LA和PEMS-BAY文件夹存放的是scripts中generate_training_data.py生成的数据，model保存的是训练好的模型及其设置参数，sensor_graph保存的是传感器的数据，其中graph_sensor_ids.txt保存了所有数据中所使用的传感器的id，distances_la_">
+<meta property="og:type" content="article">
+<meta property="og:title" content="DCRNN_Pytorch代码解析">
+<meta property="og:url" content="https://leezepeng.github.io/2021/03/13/DCRNN-Pytorch%E4%BB%A3%E7%A0%81%E8%A7%A3%E6%9E%90/index.html">
+<meta property="og:site_name" content="LeeZePeng&#39;s Blog">
+<meta property="og:description" content="DCRNN_PyTorch代码解析总体框架  data存放模型用到的数据。其中METR-LA和PEMS-BAY文件夹存放的是scripts中generate_training_data.py生成的数据，model保存的是训练好的模型及其设置参数，sensor_graph保存的是传感器的数据，其中graph_sensor_ids.txt保存了所有数据中所使用的传感器的id，distances_la_">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://leezepeng.github.io/2021/03/13/DCRNN-Pytorch%E4%BB%A3%E7%A0%81%E8%A7%A3%E6%9E%90/图片%201.png">
+<meta property="og:image" content="https://leezepeng.github.io/2021/03/13/DCRNN-Pytorch%E4%BB%A3%E7%A0%81%E8%A7%A3%E6%9E%90/result1.png">
+<meta property="og:image" content="https://leezepeng.github.io/2021/03/13/DCRNN-Pytorch%E4%BB%A3%E7%A0%81%E8%A7%A3%E6%9E%90/result2.png">
+<meta property="og:image" content="https://leezepeng.github.io/2021/03/13/DCRNN-Pytorch%E4%BB%A3%E7%A0%81%E8%A7%A3%E6%9E%90/result3.png">
+<meta property="og:image" content="https://leezepeng.github.io/2021/03/13/DCRNN-Pytorch%E4%BB%A3%E7%A0%81%E8%A7%A3%E6%9E%90/result4.png">
+<meta property="og:image" content="https://leezepeng.github.io/2021/03/13/DCRNN-Pytorch%E4%BB%A3%E7%A0%81%E8%A7%A3%E6%9E%90/图片%202.png">
+<meta property="og:image" content="https://leezepeng.github.io/2021/03/13/DCRNN-Pytorch%E4%BB%A3%E7%A0%81%E8%A7%A3%E6%9E%90/Fig2.JPG">
+<meta property="og:image" content="https://leezepeng.github.io/2021/03/13/DCRNN-Pytorch%E4%BB%A3%E7%A0%81%E8%A7%A3%E6%9E%90/sup.png">
+<meta property="og:image" content="https://leezepeng.github.io/2021/03/13/DCRNN-Pytorch%E4%BB%A3%E7%A0%81%E8%A7%A3%E6%9E%90/model.png">
+<meta property="og:image" content="https://leezepeng.github.io/2021/03/13/DCRNN-Pytorch%E4%BB%A3%E7%A0%81%E8%A7%A3%E6%9E%90/cell.png">
+<meta property="og:image" content="https://leezepeng.github.io/2021/03/13/DCRNN-Pytorch%E4%BB%A3%E7%A0%81%E8%A7%A3%E6%9E%90/1.png">
+<meta property="article:published_time" content="2021-03-13T12:22:21.000Z">
+<meta property="article:modified_time" content="2021-03-13T12:25:23.940Z">
+<meta property="article:author" content="LeeZePeng">
+<meta property="article:tag" content="交通流">
+<meta property="article:tag" content="代码解析">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://leezepeng.github.io/2021/03/13/DCRNN-Pytorch%E4%BB%A3%E7%A0%81%E8%A7%A3%E6%9E%90/图片%201.png">
+
+<link rel="canonical" href="https://leezepeng.github.io/2021/03/13/DCRNN-Pytorch%E4%BB%A3%E7%A0%81%E8%A7%A3%E6%9E%90/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>DCRNN_Pytorch代码解析 | LeeZePeng's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --></head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/LeeZePeng" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">LeeZePeng's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">知行合一，经世致用</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://leezepeng.github.io/2021/03/13/DCRNN-Pytorch%E4%BB%A3%E7%A0%81%E8%A7%A3%E6%9E%90/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="LeeZePeng">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="LeeZePeng's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          DCRNN_Pytorch代码解析
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2021-03-13 20:22:21 / 修改时间：20:25:23" itemprop="dateCreated datePublished" datetime="2021-03-13T20:22:21+08:00">2021-03-13</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E4%BB%A3%E7%A0%81%E8%A7%A3%E6%9E%90/" itemprop="url" rel="index"><span itemprop="name">代码解析</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>20k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>18 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="DCRNN-PyTorch代码解析"><a href="#DCRNN-PyTorch代码解析" class="headerlink" title="DCRNN_PyTorch代码解析"></a>DCRNN_PyTorch代码解析</h1><h2 id="总体框架"><a href="#总体框架" class="headerlink" title="总体框架"></a>总体框架</h2><p><img src="./图片 1.png" style="zoom:60%;" /></p>
+<ol>
+<li>data存放模型用到的数据。其中METR-LA和PEMS-BAY文件夹存放的是scripts中generate_training_data.py生成的数据，model保存的是训练好的模型及其设置参数，sensor_graph保存的是传感器的数据，其中graph_sensor_ids.txt保存了所有数据中所使用的传感器的id，distances_la_2012.csv以csv格式保存了传感器之间的距离。metr-la.h5和pems-bay.h5是两个城市的交通数据。</li>
+<li>figures文件存放的是模型总体结构的图片。</li>
+<li>lib文件包含模型用到的工具函数、优化算法和评价指标。</li>
+<li>model文件中dcrnn_supervisor.py是训练过程中控制整个训练流程的文件，dcrnn_model.py定义了dcrnn模型，dcrnn_cell.py定义了模型中的cell单元，其中实现了核心的扩散卷积。</li>
+<li>scripts包含数据预处理代码，其中gen_adj_mx.py用于生成图的邻接矩阵，generate_training_data.py用于生成训练、验证和测试数据。</li>
+<li>dcrnn_train_pytorch.py是用来训练模型的，run_demo_pytorch.py是用来跑一下已经训练好的模型。</li>
+</ol>
+<h2 id="运行说明"><a href="#运行说明" class="headerlink" title="运行说明"></a>运行说明</h2><span id="more"></span>
+<h3 id="需要安装的依赖"><a href="#需要安装的依赖" class="headerlink" title="需要安装的依赖"></a>需要安装的依赖</h3><ul>
+<li>torch</li>
+<li>scipy&gt;=0.19.0</li>
+<li>numpy&gt;=1.12.1</li>
+<li>pandas&gt;=0.19.2</li>
+<li>pyyaml</li>
+<li>statsmodels</li>
+<li>tensorflow&gt;=1.3.0</li>
+<li>tables</li>
+<li>future</li>
+</ul>
+<p>依赖可以依照下面的命令直接安装:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pip install -r requirements.txt</span><br></pre></td></tr></table></figure>
+<p><strong>使用pip安装的一些建议</strong></p>
+<ul>
+<li>得保证pip对应的环境不是base环境，不然会和其他环境冲突，一定要用which python或者where python检查一下是否是自己conda环境内的python。</li>
+<li>最好是使用conda一个个安装</li>
+</ul>
+<h3 id="与tensorflow的效率比较"><a href="#与tensorflow的效率比较" class="headerlink" title="与tensorflow的效率比较"></a>与tensorflow的效率比较</h3><p>使用MAE损失函数</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">Horizon</th>
+<th style="text-align:center">Tensorflow</th>
+<th style="text-align:center">Pytorch</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">1 Hour</td>
+<td style="text-align:center">3.69</td>
+<td style="text-align:center">3.12</td>
+</tr>
+<tr>
+<td style="text-align:left">30 Min</td>
+<td style="text-align:center">3.15</td>
+<td style="text-align:center">2.82</td>
+</tr>
+<tr>
+<td style="text-align:left">15 Min</td>
+<td style="text-align:center">2.77</td>
+<td style="text-align:center">2.56</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h2 id="数据预处理"><a href="#数据预处理" class="headerlink" title="数据预处理"></a>数据预处理</h2><p>METR-LA和PEMS-BAY的数据文件, <code>metr-la.h5</code> 和 <code>pems-bay.h5</code>, 下载地址 <a target="_blank" rel="noopener" href="https://pan.baidu.com/s/14Yy9isAIZYdU__OYEQGa_g">Baidu Yun</a>, 把他们放在 <code>data/</code> 文件夹.<br> <code>*.h5</code> 以 <code>panads.DataFrame</code> 格式存放数据，使用的是 <code>HDF5</code> 文件格式。数据框如下所示:</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center"></th>
+<th style="text-align:center">sensor_0</th>
+<th style="text-align:center">sensor_1</th>
+<th style="text-align:center">sensor_2</th>
+<th style="text-align:center">sensor_n</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">2018/01/01 00:00:00</td>
+<td style="text-align:center">60.0</td>
+<td style="text-align:center">65.0</td>
+<td style="text-align:center">70.0</td>
+<td style="text-align:center">…</td>
+</tr>
+<tr>
+<td style="text-align:center">2018/01/01 00:05:00</td>
+<td style="text-align:center">61.0</td>
+<td style="text-align:center">64.0</td>
+<td style="text-align:center">65.0</td>
+<td style="text-align:center">…</td>
+</tr>
+<tr>
+<td style="text-align:center">2018/01/01 00:10:00</td>
+<td style="text-align:center">63.0</td>
+<td style="text-align:center">65.0</td>
+<td style="text-align:center">60.0</td>
+<td style="text-align:center">…</td>
+</tr>
+<tr>
+<td style="text-align:center">…</td>
+<td style="text-align:center">…</td>
+<td style="text-align:center">…</td>
+<td style="text-align:center">…</td>
+<td style="text-align:center">…</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>这是关于HDF5数据格式的参考资料： <a target="_blank" rel="noopener" href="https://medium.com/@jerilkuriakose/using-hdf5-with-python-6c5242d08773">Using HDF5 with Python</a>.</p>
+<p>运行下面命令生成 train/test/val 数据集，数据集位于 <code>data/&#123;METR-LA,PEMS-BAY&#125;/&#123;train,val,test&#125;.npz</code>.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 生成数据集文件夹</span></span><br><span class="line">mkdir -p data/&#123;METR-LA,PEMS-BAY&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># METR-LA</span></span><br><span class="line">python -m scripts.generate_training_data --output_dir=data/METR-LA --traffic_df_filename=data/metr-la.h5</span><br><span class="line"></span><br><span class="line"><span class="comment"># PEMS-BAY</span></span><br><span class="line">python -m scripts.generate_training_data --output_dir=data/PEMS-BAY --traffic_df_filename=data/pems-bay.h5</span><br></pre></td></tr></table></figure>
+<h2 id="运行预训练模型模型"><a href="#运行预训练模型模型" class="headerlink" title="运行预训练模型模型"></a>运行预训练模型模型</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># METR-LA</span></span><br><span class="line">python run_demo_pytorch.py --config_filename=data/model/pretrained/METR-LA/config.yaml</span><br><span class="line"></span><br><span class="line"><span class="comment"># PEMS-BAY</span></span><br><span class="line">python run_demo_pytorch.py --config_filename=data/model/pretrained/PEMS-BAY/config.yaml</span><br></pre></td></tr></table></figure>
+<p>DCRNN模型的预测结果位于 <code>data/results/dcrnn_predictions</code>.</p>
+<h2 id="模型训练"><a href="#模型训练" class="headerlink" title="模型训练"></a>模型训练</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># METR-LA</span></span><br><span class="line">python dcrnn_train_pytorch.py --config_filename=data/model/dcrnn_la.yaml</span><br><span class="line"></span><br><span class="line"><span class="comment"># PEMS-BAY</span></span><br><span class="line">python dcrnn_train_pytorch.py --config_filename=data/model/dcrnn_bay.yaml</span><br><span class="line">有可能梯度爆炸，临时的解决办法是在爆炸前中断后断点续训，或者降低学习速率。</span><br></pre></td></tr></table></figure>
+<h2 id="模型评估"><a href="#模型评估" class="headerlink" title="模型评估"></a>模型评估</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># METR-LA</span></span><br><span class="line">python -m scripts.eval_baseline_methods --traffic_reading_filename=data/metr-la.h5</span><br></pre></td></tr></table></figure>
+<h3 id="PyTorch运行结果"><a href="#PyTorch运行结果" class="headerlink" title="PyTorch运行结果"></a>PyTorch运行结果</h3><p><img src="./result1.png" alt="PyTorch Results" title="PyTorch Results"></p>
+<p><img src="./result2.png" alt="PyTorch Results" title="PyTorch Results"></p>
+<p><img src="./result3.png" alt="PyTorch Results" title="PyTorch Results"></p>
+<p><img src="./result4.png" alt="PyTorch Results" title="PyTorch Results"></p>
+<h2 id="scripts文件"><a href="#scripts文件" class="headerlink" title="scripts文件"></a>scripts文件</h2><p>主要包括数据预处理的代码。</p>
+<h3 id="gen-adj-mx-py"><a href="#gen-adj-mx-py" class="headerlink" title="gen_adj_mx.py"></a>gen_adj_mx.py</h3><p>gen_adj_mx.py是用来生成邻接矩阵的。</p>
+<p>main函数里面首先定义了命令行参数，如</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">parser.add_argument(<span class="string">&#x27;--sensor_ids_filename&#x27;</span>, <span class="built_in">type</span>=<span class="built_in">str</span>, default=<span class="string">&#x27;data/sensor_graph/graph_sensor_ids.txt&#x27;</span>, <span class="built_in">help</span>=<span class="string">&#x27;File containing sensor ids separated by comma.&#x27;</span>) </span><br></pre></td></tr></table></figure>
+<p>其中的参数分别表示命令的名称，类型，默认值，帮助信息。 定义后就可以用定义后就可以用 <code>args.sensor_ids_filename</code> 就可以取相应的值。然后通过<code>get_adjacency_matrix</code> 函数生成邻接矩阵，最后保存到 pickle 的文件。 <code>get_adjacency_matrix(distance_df, sensor_ids, normalized_k=0.1)</code> 具体的解释:</p>
+<ol>
+<li><p>初始化: <code>dist_mx</code>的大小为<code>[num_sensors,num_sensors]</code>其中 <code>(num_sensors = len(sensor_ids))</code>，初始值为<code>inf</code>(无限大)</p>
+</li>
+<li><p>构建传感器id到索引映射:遍历所有对象 <code>sensor_ids</code> ，将每一个<code>i</code> 填充至<code>sensor_id_to_ind[sensor_id]</code> ，即 <code>sensor_id_to_ind[sensor_id] = i</code>。</p>
+</li>
+<li><p>用距离填充矩阵中的单元格:遍历所有<code>distance_df.values</code> ，从 <code>sensor_id_to_ind[row[0]]</code>( <code>from</code> )到<code>sensor_id_to_ind[row[1]]</code>(<code>to</code> )，填充<code>row[2]</code> (<code>distance</code> )。</p>
+</li>
+<li><p>对 <code>dist_mx</code> 进行归一化，以减少计算量;对于稀疏性，将低于阈值(例如k)的项设置为零，</p>
+<p>如: <code>adj_mx[adj_mx &lt; normalized_k] = 0</code></p>
+</li>
+</ol>
+<h3 id="generate-training-data-py"><a href="#generate-training-data-py" class="headerlink" title="generate_training_data.py"></a>generate_training_data.py</h3><p>generate_training_data.py是用来生成训练数据的。</p>
+<ol>
+<li><p>以1小时为统计间隔，记录每天的间隔小时数<code>time_in_day</code> ，并添加到 <code>data_list</code></p>
+</li>
+<li><p>以1天为统计间隔，记录每周的间隔天数 <code>day_in_week</code> ，并添加到 <code>data_list</code></p>
+</li>
+<li><p>在补偿之后的时间范围内<code>(range(min_t,max_t))</code>，记录每天的时间特征指标到<code>x</code>，<code>y</code></p>
+</li>
+<li><p>将数据写入npz文件( <code>num_test = 6831</code> )使用最后的6831示例作为测试，其中1/8用于验证，</p>
+<p>其余7/8用于训练。</p>
+</li>
+</ol>
+<p><img src="./图片 2.png" alt=""></p>
+<h3 id="model文件"><a href="#model文件" class="headerlink" title="model文件"></a>model文件</h3><p>模型总体框架如下图所示，总体是一个encoder-decoder结构，encoder和decoder里面各包含有两个 RNNCell，每个RNNCell包含有64个units，每个units里面包含207个结点(传感器个数)。其中用到了 scheduled sampling，即每次以一定的概率用模型的预测值作为下一个cell的输入进行预测，并且这个 概率值随着时间增大。GO是初始化为全0的矩阵，即第一次用模型的预测值作为下一个cell的输入进行预 测的时候是取全0的值作为输入。</p>
+<p><img src="./Fig2.JPG" alt="Fig2"></p>
+<h4 id="dcrnn-supervisor-py"><a href="#dcrnn-supervisor-py" class="headerlink" title="dcrnn_supervisor.py"></a>dcrnn_supervisor.py</h4><p><img src="./sup.png" alt="sup"></p>
+<p>用于管理整个训练过程(从输入到输出)，即定义整个图。定义了一个DCRNNSupervisor类，它保存了 训练过程的参数，定义了记录训练状态的logging，然后将数据放入DCRNN模型中进行处理，得到结果后计算损失，获得梯度，进行梯度裁剪，更新梯度，保存参数。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">DCRNNSupervisor</span>:</span></span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">        类名: DCRNNSupervisor</span></span><br><span class="line"><span class="string">        主要成员：</span></span><br><span class="line"><span class="string">        1、log:初始化能记录、打印log的self.__logger类</span></span><br><span class="line"><span class="string">        2、data:加载数据集的类，该类包括Dataloader和scaler</span></span><br><span class="line"><span class="string">        3、节点数，输入特征向量维度，输入步长，输出维度，输出步长。</span></span><br><span class="line"><span class="string">        4、是否使用课程式学习 参考资料 https://blog.csdn.net/qq_30219017/article/details/89090690</span></span><br><span class="line"><span class="string">        5、实例化的DCRNN模型</span></span><br><span class="line"><span class="string">        主要方法：</span></span><br><span class="line"><span class="string">        1、train(self, **kwargs) 该方法将外部的参数与内部合并起来并调用_train(**kwargs)</span></span><br><span class="line"><span class="string">        2、evaluate(self, dataset=&#x27;val&#x27;, batches_seen=0) 将模型变为评估模式，迭代测试集计算准确率和损失值</span></span><br><span class="line"><span class="string">        3、_train(self, base_lr,</span></span><br><span class="line"><span class="string">               steps, patience=50, epochs=100, lr_decay_ratio=0.1, log_every=1, save_model=1,</span></span><br><span class="line"><span class="string">               test_every_n_epochs=10, epsilon=1e-8, **kwargs)</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br></pre></td></tr></table></figure>
+<p>(1)类初始化</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, adj_mx, **kwargs</span>):</span></span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    函数名: __init__</span></span><br><span class="line"><span class="string">    函数功能描述: 初始化DCRNNSupervisor成员</span></span><br><span class="line"><span class="string">    函数参数: 邻接矩阵和kwargs</span></span><br><span class="line"><span class="string">    函数返回值: NULL</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    self._kwargs = kwargs<span class="comment">#kwargs是传入的yaml文件内的参数该文件保存了data，model，train三部分信息。</span></span><br><span class="line">    self._data_kwargs = kwargs.get(<span class="string">&#x27;data&#x27;</span>)</span><br><span class="line">    self._model_kwargs = kwargs.get(<span class="string">&#x27;model&#x27;</span>)</span><br><span class="line">    self._train_kwargs = kwargs.get(<span class="string">&#x27;train&#x27;</span>)</span><br><span class="line"></span><br><span class="line">    self.max_grad_norm = self._train_kwargs.get(<span class="string">&#x27;max_grad_norm&#x27;</span>, <span class="number">1.</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 对log类初始化</span></span><br><span class="line">    self._log_dir = self._get_log_dir(kwargs)</span><br><span class="line">    self._writer = SummaryWriter(<span class="string">&#x27;runs/&#x27;</span> + self._log_dir)</span><br><span class="line"></span><br><span class="line">    log_level = self._kwargs.get(<span class="string">&#x27;log_level&#x27;</span>, <span class="string">&#x27;INFO&#x27;</span>)</span><br><span class="line">    self._logger = utils.get_logger(self._log_dir, __name__, <span class="string">&#x27;info.log&#x27;</span>, level=log_level)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 对数据集信息初始化</span></span><br><span class="line">    self._data = utils.load_dataset(**self._data_kwargs)<span class="comment">#实例化dataset类</span></span><br><span class="line">    self.standard_scaler = self._data[<span class="string">&#x27;scaler&#x27;</span>]<span class="comment">#实例化标准化类</span></span><br><span class="line"></span><br><span class="line">    self.num_nodes = <span class="built_in">int</span>(self._model_kwargs.get(<span class="string">&#x27;num_nodes&#x27;</span>, <span class="number">1</span>))<span class="comment">#节点数</span></span><br><span class="line">    self.input_dim = <span class="built_in">int</span>(self._model_kwargs.get(<span class="string">&#x27;input_dim&#x27;</span>, <span class="number">1</span>))<span class="comment">#输入特征向量维度</span></span><br><span class="line">    self.seq_len = <span class="built_in">int</span>(self._model_kwargs.get(<span class="string">&#x27;seq_len&#x27;</span>))  <span class="comment"># 输入序列步长</span></span><br><span class="line">    self.output_dim = <span class="built_in">int</span>(self._model_kwargs.get(<span class="string">&#x27;output_dim&#x27;</span>, <span class="number">1</span>)) <span class="comment">#输出维度</span></span><br><span class="line">    self.use_curriculum_learning = <span class="built_in">bool</span>(</span><br><span class="line">      self._model_kwargs.get(<span class="string">&#x27;use_curriculum_learning&#x27;</span>, <span class="literal">False</span>))<span class="comment">#是否使用课程学习</span></span><br><span class="line">    self.horizon = <span class="built_in">int</span>(self._model_kwargs.get(<span class="string">&#x27;horizon&#x27;</span>, <span class="number">1</span>))  <span class="comment">#输出序列步长</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># setup model</span></span><br><span class="line">    dcrnn_model = DCRNNModel(adj_mx, self._logger, **self._model_kwargs)<span class="comment">#DCRNN模型实例化</span></span><br><span class="line">    self.dcrnn_model = dcrnn_model.cuda() <span class="keyword">if</span> torch.cuda.is_available() <span class="keyword">else</span> dcrnn_model</span><br><span class="line">    self._logger.info(<span class="string">&quot;Model created&quot;</span>)</span><br><span class="line"></span><br><span class="line">    self._epoch_num = self._train_kwargs.get(<span class="string">&#x27;epoch&#x27;</span>, <span class="number">0</span>)<span class="comment">#训练轮数</span></span><br><span class="line">    <span class="keyword">if</span> self._epoch_num &gt; <span class="number">0</span>:</span><br><span class="line">      self.load_model()</span><br></pre></td></tr></table></figure>
+<p>(2)训练模块</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">_train</span>(<span class="params">self, base_lr,</span></span></span><br><span class="line"><span class="function"><span class="params">           steps, patience=<span class="number">50</span>, epochs=<span class="number">100</span>, lr_decay_ratio=<span class="number">0.1</span>, log_every=<span class="number">1</span>, save_model=<span class="number">1</span>,</span></span></span><br><span class="line"><span class="function"><span class="params">           test_every_n_epochs=<span class="number">10</span>, epsilon=<span class="number">1e-8</span>, **kwargs</span>):</span></span><br><span class="line">  	<span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    函数名: _train</span></span><br><span class="line"><span class="string">    函数功能描述: 训练流程</span></span><br><span class="line"><span class="string">    函数参数: steps, patience=50, epochs=100, lr_decay_ratio=0.1, log_every=1, save_model=1,</span></span><br><span class="line"><span class="string">           test_every_n_epochs=10, epsilon=1e-8, **kwargs</span></span><br><span class="line"><span class="string">    函数返回值: NULL</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    <span class="comment"># steps is used in learning rate - will see if need to use it?</span></span><br><span class="line">    min_val_loss = <span class="built_in">float</span>(<span class="string">&#x27;inf&#x27;</span>)</span><br><span class="line">    wait = <span class="number">0</span></span><br><span class="line">    optimizer = torch.optim.Adam(self.dcrnn_model.parameters(), lr=base_lr, eps=epsilon)<span class="comment">#定义adam优化器</span></span><br><span class="line"></span><br><span class="line">    lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=steps,</span><br><span class="line">                                                        gamma=lr_decay_ratio)<span class="comment">#按需调整学习率 MultiStepLR 调整学习率的一些小tips https://liumin.blog.csdn.net/article/details/85143614</span></span><br><span class="line"></span><br><span class="line">    self._logger.info(<span class="string">&#x27;Start training ...&#x27;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># this will fail if model is loaded with a changed batch_size</span></span><br><span class="line">    num_batches = self._data[<span class="string">&#x27;train_loader&#x27;</span>].num_batch<span class="comment">#训练批次数</span></span><br><span class="line">    self._logger.info(<span class="string">&quot;num_batches:&#123;&#125;&quot;</span>.<span class="built_in">format</span>(num_batches))</span><br><span class="line"></span><br><span class="line">    batches_seen = num_batches * self._epoch_num</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> epoch_num <span class="keyword">in</span> <span class="built_in">range</span>(self._epoch_num, epochs):</span><br><span class="line"></span><br><span class="line">        self.dcrnn_model = self.dcrnn_model.train()<span class="comment">#模型设置为训练模式</span></span><br><span class="line"></span><br><span class="line">        train_iterator = self._data[<span class="string">&#x27;train_loader&#x27;</span>].get_iterator()<span class="comment">#获取生成训练集的迭代器</span></span><br><span class="line">        losses = []</span><br><span class="line"></span><br><span class="line">        start_time = time.time()</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> _, (x, y) <span class="keyword">in</span> <span class="built_in">enumerate</span>(train_iterator):</span><br><span class="line">            optimizer.zero_grad()<span class="comment">#清空梯度</span></span><br><span class="line"></span><br><span class="line">            x, y = self._prepare_data(x, y)<span class="comment">#数据预处理</span></span><br><span class="line"></span><br><span class="line">            output = self.dcrnn_model(x, y, batches_seen)<span class="comment">#前向传播</span></span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> batches_seen == <span class="number">0</span>:</span><br><span class="line">              <span class="comment"># this is a workaround to accommodate dynamically registered parameters in DCGRUCell</span></span><br><span class="line">                optimizer = torch.optim.Adam(self.dcrnn_model.parameters(), lr=base_lr, eps=epsilon)<span class="comment">#定义adam优化器</span></span><br><span class="line"></span><br><span class="line">                loss = self._compute_loss(y, output)<span class="comment">#计算损失函数</span></span><br><span class="line"></span><br><span class="line">                self._logger.debug(loss.item())</span><br><span class="line"></span><br><span class="line">                losses.append(loss.item())<span class="comment">#记录损失函数</span></span><br><span class="line"></span><br><span class="line">                batches_seen += <span class="number">1</span></span><br><span class="line">                loss.backward()<span class="comment">#反向传播</span></span><br><span class="line"></span><br><span class="line">                <span class="comment"># gradient clipping - this does it in place</span></span><br><span class="line">                torch.nn.utils.clip_grad_norm_(self.dcrnn_model.parameters(), self.max_grad_norm)<span class="comment">#梯度裁剪</span></span><br><span class="line"></span><br><span class="line">                optimizer.step()<span class="comment">#更新参数</span></span><br><span class="line">                self._logger.info(<span class="string">&quot;epoch complete&quot;</span>)</span><br><span class="line">                lr_scheduler.step()<span class="comment">#更新学习率</span></span><br><span class="line">                self._logger.info(<span class="string">&quot;evaluating now!&quot;</span>)</span><br><span class="line"></span><br><span class="line">                val_loss, _ = self.evaluate(dataset=<span class="string">&#x27;val&#x27;</span>, batches_seen=batches_seen)<span class="comment">#评估验证集</span></span><br><span class="line"></span><br><span class="line">                end_time = time.time()</span><br><span class="line"></span><br><span class="line">                self._writer.add_scalar(<span class="string">&#x27;training loss&#x27;</span>,</span><br><span class="line">                                        np.mean(losses),</span><br><span class="line">                                        batches_seen)</span><br><span class="line">								<span class="comment">#写入log信息 保存验证集上最小损失的模型</span></span><br><span class="line">                <span class="keyword">if</span> (epoch_num % log_every) == log_every - <span class="number">1</span>:</span><br><span class="line">                    message = <span class="string">&#x27;Epoch [&#123;&#125;/&#123;&#125;] (&#123;&#125;) train_mae: &#123;:.4f&#125;, val_mae: &#123;:.4f&#125;, lr: &#123;:.6f&#125;, &#x27;</span> \</span><br><span class="line">                    <span class="string">&#x27;&#123;:.1f&#125;s&#x27;</span>.<span class="built_in">format</span>(epoch_num, epochs, batches_seen,</span><br><span class="line">                                     np.mean(losses), val_loss, lr_scheduler.get_lr()[<span class="number">0</span>],</span><br><span class="line">                                     (end_time - start_time))</span><br><span class="line">                    self._logger.info(message)</span><br><span class="line"></span><br><span class="line">                    <span class="keyword">if</span> (epoch_num % test_every_n_epochs) == test_every_n_epochs - <span class="number">1</span>:</span><br><span class="line">                        test_loss, _ = self.evaluate(dataset=<span class="string">&#x27;test&#x27;</span>, batches_seen=batches_seen)</span><br><span class="line">                        message = <span class="string">&#x27;Epoch [&#123;&#125;/&#123;&#125;] (&#123;&#125;) train_mae: &#123;:.4f&#125;, test_mae: &#123;:.4f&#125;,  lr: &#123;:.6f&#125;, &#x27;</span> \</span><br><span class="line">                        <span class="string">&#x27;&#123;:.1f&#125;s&#x27;</span>.<span class="built_in">format</span>(epoch_num, epochs, batches_seen,</span><br><span class="line">                                         np.mean(losses), test_loss, lr_scheduler.get_lr()[<span class="number">0</span>],</span><br><span class="line">                                         (end_time - start_time))</span><br><span class="line">                        self._logger.info(message)</span><br><span class="line"></span><br><span class="line">                        <span class="keyword">if</span> val_loss &lt; min_val_loss:</span><br><span class="line">                            wait = <span class="number">0</span></span><br><span class="line">                            <span class="keyword">if</span> save_model:</span><br><span class="line">                                model_file_name = self.save_model(epoch_num)</span><br><span class="line">                                self._logger.info(</span><br><span class="line">                                  <span class="string">&#x27;Val loss decrease from &#123;:.4f&#125; to &#123;:.4f&#125;, &#x27;</span></span><br><span class="line">                                  <span class="string">&#x27;saving to &#123;&#125;&#x27;</span>.<span class="built_in">format</span>(min_val_loss, val_loss, model_file_name))</span><br><span class="line">                                min_val_loss = val_loss</span><br><span class="line"></span><br><span class="line">                                <span class="keyword">elif</span> val_loss &gt;= min_val_loss:</span><br><span class="line">                                    wait += <span class="number">1</span></span><br><span class="line">                                    <span class="keyword">if</span> wait == patience:</span><br><span class="line">                                        self._logger.warning(<span class="string">&#x27;Early stopping at epoch: %d&#x27;</span> % epoch_num)</span><br><span class="line">                                        <span class="keyword">break</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>(3)评估模块</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">evaluate</span>(<span class="params">self, dataset=<span class="string">&#x27;val&#x27;</span>, batches_seen=<span class="number">0</span></span>):</span></span><br><span class="line">  <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">   函数名: evaluate</span></span><br><span class="line"><span class="string">   函数功能描述: 评估模型</span></span><br><span class="line"><span class="string">   函数参数:  dataset=&#x27;val&#x27;, batches_seen=0</span></span><br><span class="line"><span class="string">   函数返回值: NULL</span></span><br><span class="line"><span class="string">   &quot;&quot;&quot;</span></span><br><span class="line">  <span class="keyword">with</span> torch.no_grad():</span><br><span class="line">    self.dcrnn_model = self.dcrnn_model.<span class="built_in">eval</span>()<span class="comment">#评估模式</span></span><br><span class="line"></span><br><span class="line">    val_iterator = self._data[<span class="string">&#x27;&#123;&#125;_loader&#x27;</span>.<span class="built_in">format</span>(dataset)].get_iterator()<span class="comment">#生成数据集</span></span><br><span class="line">    losses = []</span><br><span class="line"></span><br><span class="line">    y_truths = []</span><br><span class="line">    y_preds = []</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> _, (x, y) <span class="keyword">in</span> <span class="built_in">enumerate</span>(val_iterator):</span><br><span class="line">      x, y = self._prepare_data(x, y)<span class="comment">#数据预处理</span></span><br><span class="line"></span><br><span class="line">      output = self.dcrnn_model(x)<span class="comment">#前向传播</span></span><br><span class="line">      loss = self._compute_loss(y, output)<span class="comment">#计算损失函数</span></span><br><span class="line">      losses.append(loss.item())</span><br><span class="line"></span><br><span class="line">      y_truths.append(y.cpu())<span class="comment">#记录标签</span></span><br><span class="line">      y_preds.append(output.cpu())<span class="comment">#记录预测值</span></span><br><span class="line"></span><br><span class="line">      mean_loss = np.mean(losses)</span><br><span class="line"></span><br><span class="line">      self._writer.add_scalar(<span class="string">&#x27;&#123;&#125; loss&#x27;</span>.<span class="built_in">format</span>(dataset), mean_loss, batches_seen)</span><br><span class="line"></span><br><span class="line">      y_preds = np.concatenate(y_preds, axis=<span class="number">1</span>)</span><br><span class="line">      y_truths = np.concatenate(y_truths, axis=<span class="number">1</span>)  <span class="comment"># 在batch_size维拼接</span></span><br><span class="line"></span><br><span class="line">      y_truths_scaled = []</span><br><span class="line">      y_preds_scaled = []</span><br><span class="line">      <span class="keyword">for</span> t <span class="keyword">in</span> <span class="built_in">range</span>(y_preds.shape[<span class="number">0</span>]):</span><br><span class="line">        y_truth = self.standard_scaler.inverse_transform(y_truths[t])</span><br><span class="line">        y_pred = self.standard_scaler.inverse_transform(y_preds[t])</span><br><span class="line">        y_truths_scaled.append(y_truth)</span><br><span class="line">        y_preds_scaled.append(y_pred)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> mean_loss, &#123;<span class="string">&#x27;prediction&#x27;</span>: y_preds_scaled, <span class="string">&#x27;truth&#x27;</span>: y_truths_scaled&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="dcrnn-model-py"><a href="#dcrnn-model-py" class="headerlink" title="dcrnn_model.py"></a>dcrnn_model.py</h4><p>这部分调用了两次DCGRUCell，它分别返回了一个cell和一个cell_with_projection(最后一层cell要进行 预测，需要将维度变为预测值的维度)，定义了一个encoder(包含两个cell)和decoder(包含一个cell 和一个cell_with_projection)。每个RNNcell由64个units构成，每个units有207个结点。</p>
+<p><img src="./model.png" alt="model"></p>
+<p>(1)Seq2Seq模块</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Seq2SeqAttrs</span>:</span><span class="comment">#定义父类，初始化Seq2Seq模型各项参数</span></span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">        类名: Seq2SeqAttrs</span></span><br><span class="line"><span class="string">        主要成员：</span></span><br><span class="line"><span class="string">        1、邻接矩阵</span></span><br><span class="line"><span class="string">        2、随机游走步长</span></span><br><span class="line"><span class="string">        3、卷积核类型</span></span><br><span class="line"><span class="string">        4、节点数</span></span><br><span class="line"><span class="string">        5、rnn层数</span></span><br><span class="line"><span class="string">        6、rnn单元数</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, adj_mx, **model_kwargs</span>):</span></span><br><span class="line">        self.adj_mx = adj_mx</span><br><span class="line">        self.max_diffusion_step = <span class="built_in">int</span>(model_kwargs.get(<span class="string">&#x27;max_diffusion_step&#x27;</span>, <span class="number">2</span>))</span><br><span class="line">        self.cl_decay_steps = <span class="built_in">int</span>(model_kwargs.get(<span class="string">&#x27;cl_decay_steps&#x27;</span>, <span class="number">1000</span>))</span><br><span class="line">        self.filter_type = model_kwargs.get(<span class="string">&#x27;filter_type&#x27;</span>, <span class="string">&#x27;laplacian&#x27;</span>)</span><br><span class="line">        self.num_nodes = <span class="built_in">int</span>(model_kwargs.get(<span class="string">&#x27;num_nodes&#x27;</span>, <span class="number">1</span>))</span><br><span class="line">        self.num_rnn_layers = <span class="built_in">int</span>(model_kwargs.get(<span class="string">&#x27;num_rnn_layers&#x27;</span>, <span class="number">1</span>))</span><br><span class="line">        self.rnn_units = <span class="built_in">int</span>(model_kwargs.get(<span class="string">&#x27;rnn_units&#x27;</span>))</span><br><span class="line">        self.hidden_state_size = self.num_nodes * self.rnn_units</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>(2)EncoderModel模块</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">EncoderModel</span>(<span class="params">nn.Module, Seq2SeqAttrs</span>):</span></span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">        类名: EncoderModel</span></span><br><span class="line"><span class="string">        主要成员：</span></span><br><span class="line"><span class="string">        1、输入维度</span></span><br><span class="line"><span class="string">        2、序列长度</span></span><br><span class="line"><span class="string">        3、dcgru层[dcgrucell , dcgrucell ... dcgrucell]</span></span><br><span class="line"><span class="string">        主要方法：</span></span><br><span class="line"><span class="string">        1、forward(self, inputs, hidden_state=None)</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, adj_mx, **model_kwargs</span>):</span></span><br><span class="line">        nn.Module.__init__(self)</span><br><span class="line">        Seq2SeqAttrs.__init__(self, adj_mx, **model_kwargs)</span><br><span class="line">        self.input_dim = <span class="built_in">int</span>(model_kwargs.get(<span class="string">&#x27;input_dim&#x27;</span>, <span class="number">1</span>))<span class="comment">#输入维度</span></span><br><span class="line">        self.seq_len = <span class="built_in">int</span>(model_kwargs.get(<span class="string">&#x27;seq_len&#x27;</span>))  <span class="comment"># 输入encoder时间步</span></span><br><span class="line">        self.dcgru_layers = nn.ModuleList(</span><br><span class="line">            [DCGRUCell(self.rnn_units, adj_mx, self.max_diffusion_step, self.num_nodes,</span><br><span class="line">                       filter_type=self.filter_type) <span class="keyword">for</span> _ <span class="keyword">in</span> <span class="built_in">range</span>(self.num_rnn_layers)])<span class="comment">#一个循环层堆叠两个DCGRU单元</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">forward</span>(<span class="params">self, inputs, hidden_state=<span class="literal">None</span></span>):</span></span><br><span class="line">        <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">        Encoder前向传播</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">        :参数 input: shape (batch_size, self.num_nodes * self.input_dim)</span></span><br><span class="line"><span class="string">        :参数 hidden_states: (num_layers, batch_size, self.hidden_state_size)</span></span><br><span class="line"><span class="string">               optional, zeros if not provided</span></span><br><span class="line"><span class="string">        :返回值: output: # shape (batch_size, self.hidden_state_size)</span></span><br><span class="line"><span class="string">                hidden_states # shape (num_layers, batch_size, self.hidden_state_size)</span></span><br><span class="line"><span class="string">                 (lower indices mean lower layers)</span></span><br><span class="line"><span class="string">        &quot;&quot;&quot;</span></span><br><span class="line">        batch_size, _ = inputs.size()</span><br><span class="line">        <span class="keyword">if</span> hidden_state <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">            hidden_state = torch.zeros((self.num_rnn_layers, batch_size, self.hidden_state_size),</span><br><span class="line">                                       device=device)<span class="comment">#最开始没有输出值作为特征向量与输入值融合，故使用0向量</span></span><br><span class="line">        hidden_states = []</span><br><span class="line">        output = inputs</span><br><span class="line">        <span class="comment">#循环迭代两个DCGRU单元</span></span><br><span class="line">        <span class="keyword">for</span> layer_num, dcgru_layer <span class="keyword">in</span> <span class="built_in">enumerate</span>(self.dcgru_layers):</span><br><span class="line">            next_hidden_state = dcgru_layer(output, hidden_state[layer_num])</span><br><span class="line">            hidden_states.append(next_hidden_state)</span><br><span class="line">            output = next_hidden_state</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> output, torch.stack(hidden_states)  <span class="comment"># 时间复杂度 O(num_layers) 将迭代的特征向量按时间步顺序堆叠</span></span><br></pre></td></tr></table></figure>
+<p>(3)DecoderModel模块</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">DecoderModel</span>(<span class="params">nn.Module, Seq2SeqAttrs</span>):</span></span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">        类名: EncoderModel</span></span><br><span class="line"><span class="string">        主要成员：</span></span><br><span class="line"><span class="string">        1、输出维度</span></span><br><span class="line"><span class="string">        2、输出序列长度</span></span><br><span class="line"><span class="string">        3、全连接层</span></span><br><span class="line"><span class="string">        3、dcgru层[dcgrucell , dcgrucell ... dcgrucell]</span></span><br><span class="line"><span class="string">        主要方法：</span></span><br><span class="line"><span class="string">        1、forward(self, inputs, hidden_state=None)</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, adj_mx, **model_kwargs</span>):</span></span><br><span class="line">        <span class="comment"># super().__init__(is_training, adj_mx, **model_kwargs)</span></span><br><span class="line">        nn.Module.__init__(self)</span><br><span class="line">        Seq2SeqAttrs.__init__(self, adj_mx, **model_kwargs)</span><br><span class="line">        self.output_dim = <span class="built_in">int</span>(model_kwargs.get(<span class="string">&#x27;output_dim&#x27;</span>, <span class="number">1</span>))</span><br><span class="line">        self.horizon = <span class="built_in">int</span>(model_kwargs.get(<span class="string">&#x27;horizon&#x27;</span>, <span class="number">1</span>))  <span class="comment"># for the decoder</span></span><br><span class="line">        self.projection_layer = nn.Linear(self.rnn_units, self.output_dim)</span><br><span class="line">        self.dcgru_layers = nn.ModuleList(</span><br><span class="line">            [DCGRUCell(self.rnn_units, adj_mx, self.max_diffusion_step, self.num_nodes,</span><br><span class="line">                       filter_type=self.filter_type) <span class="keyword">for</span> _ <span class="keyword">in</span> <span class="built_in">range</span>(self.num_rnn_layers)])</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">forward</span>(<span class="params">self, inputs, hidden_state=<span class="literal">None</span></span>):</span></span><br><span class="line">        <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">        解码器前向传播。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">        :参数 input: shape (batch_size, self.num_nodes * self.output_dim)</span></span><br><span class="line"><span class="string">        :参数 hidden_states: (num_layers, batch_size, self.hidden_state_size)</span></span><br><span class="line"><span class="string">               optional, zeros if not provided</span></span><br><span class="line"><span class="string">        :返回值: output: # shape (batch_size, self.num_nodes * self.output_dim)</span></span><br><span class="line"><span class="string">                hidden_states # shape (num_layers, batch_size, self.hidden_state_size)</span></span><br><span class="line"><span class="string">                 (lower indices mean lower layers)</span></span><br><span class="line"><span class="string">        &quot;&quot;&quot;</span></span><br><span class="line">        hidden_states = []</span><br><span class="line">        output = inputs</span><br><span class="line">        <span class="comment">#循环迭代两个DCGRU单元</span></span><br><span class="line">        <span class="keyword">for</span> layer_num, dcgru_layer <span class="keyword">in</span> <span class="built_in">enumerate</span>(self.dcgru_layers):</span><br><span class="line">            next_hidden_state = dcgru_layer(output, hidden_state[layer_num])</span><br><span class="line">            hidden_states.append(next_hidden_state)</span><br><span class="line">            output = next_hidden_state</span><br><span class="line">        <span class="comment">#为保证output和标签维度相同，使用一层全连接网络作为投影层，投影至和标签维度相同</span></span><br><span class="line">        projected = self.projection_layer(output.view(-<span class="number">1</span>, self.rnn_units))</span><br><span class="line">        output = projected.view(-<span class="number">1</span>, self.num_nodes * self.output_dim)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> output, torch.stack(hidden_states)</span><br></pre></td></tr></table></figure>
+<p>(4)DCRNNModel模块</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">DCRNNModel</span>(<span class="params">nn.Module, Seq2SeqAttrs</span>):</span></span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">        类名: DCRNNModel</span></span><br><span class="line"><span class="string">        主要成员：</span></span><br><span class="line"><span class="string">        1、编码器</span></span><br><span class="line"><span class="string">        2、解码器</span></span><br><span class="line"><span class="string">        主要方法：</span></span><br><span class="line"><span class="string">        1、encoder(self, inputs)</span></span><br><span class="line"><span class="string">        2、decoder(self, encoder_hidden_state, labels=None, batches_seen=None)</span></span><br><span class="line"><span class="string">        3、forward(self, inputs, labels=None, batches_seen=None)</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, adj_mx, logger, **model_kwargs</span>):</span></span><br><span class="line">        <span class="built_in">super</span>().__init__()</span><br><span class="line">        Seq2SeqAttrs.__init__(self, adj_mx, **model_kwargs)</span><br><span class="line">        self.encoder_model = EncoderModel(adj_mx, **model_kwargs)</span><br><span class="line">        self.decoder_model = DecoderModel(adj_mx, **model_kwargs)</span><br><span class="line">        self.cl_decay_steps = <span class="built_in">int</span>(model_kwargs.get(<span class="string">&#x27;cl_decay_steps&#x27;</span>, <span class="number">1000</span>))</span><br><span class="line">        self.use_curriculum_learning = <span class="built_in">bool</span>(model_kwargs.get(<span class="string">&#x27;use_curriculum_learning&#x27;</span>, <span class="literal">False</span>))</span><br><span class="line">        self._logger = logger</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">encoder</span>(<span class="params">self, inputs</span>):</span></span><br><span class="line">        <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">        向编码器循环输入t个时间步的特征向量</span></span><br><span class="line"><span class="string">        :参数 input: shape (seq_len, batch_size, num_sensor * input_dim)</span></span><br><span class="line"><span class="string">        :返回: encoder_hidden_state: (num_layers, batch_size, self.hidden_state_size)</span></span><br><span class="line"><span class="string">        &quot;&quot;&quot;</span></span><br><span class="line">        encoder_hidden_state = <span class="literal">None</span></span><br><span class="line">        <span class="keyword">for</span> t <span class="keyword">in</span> <span class="built_in">range</span>(self.encoder_model.seq_len):<span class="comment">#循环迭代seq_len步</span></span><br><span class="line">            _, encoder_hidden_state = self.encoder_model(inputs[t], encoder_hidden_state)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> encoder_hidden_state</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">decoder</span>(<span class="params">self, encoder_hidden_state, labels=<span class="literal">None</span>, batches_seen=<span class="literal">None</span></span>):</span></span><br><span class="line">        <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">        向解码器循环输入t个时间步的特征向量</span></span><br><span class="line"><span class="string">        :参数 encoder_hidden_state: (num_layers, batch_size, self.hidden_state_size)</span></span><br><span class="line"><span class="string">        :参数 labels: (self.horizon, batch_size, self.num_nodes * self.output_dim)</span></span><br><span class="line"><span class="string">        :参数 batches_seen: global step [optional, not exist for inference]</span></span><br><span class="line"><span class="string">        :返回值: output: (self.horizon, batch_size, self.num_nodes * self.output_dim)</span></span><br><span class="line"><span class="string">        &quot;&quot;&quot;</span></span><br><span class="line">        batch_size = encoder_hidden_state.size(<span class="number">1</span>)</span><br><span class="line">        go_symbol = torch.zeros((batch_size, self.num_nodes * self.decoder_model.output_dim),</span><br><span class="line">                                device=device)</span><br><span class="line">        decoder_hidden_state = encoder_hidden_state</span><br><span class="line">        decoder_input = go_symbol<span class="comment">#在第一个时间步没有任何预测结果，使用纯0向量作为预测的开始</span></span><br><span class="line"></span><br><span class="line">        outputs = []</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> t <span class="keyword">in</span> <span class="built_in">range</span>(self.decoder_model.horizon):<span class="comment">#循环迭代horizon步</span></span><br><span class="line">            decoder_output, decoder_hidden_state = self.decoder_model(decoder_input,</span><br><span class="line">                                                                      decoder_hidden_state)</span><br><span class="line">            decoder_input = decoder_output<span class="comment">#上一步输出作为下一步输入</span></span><br><span class="line">            outputs.append(decoder_output)</span><br><span class="line">            <span class="keyword">if</span> self.training <span class="keyword">and</span> self.use_curriculum_learning:<span class="comment">#课程学习 https://zhuanlan.zhihu.com/p/81455004</span></span><br><span class="line">                c = np.random.uniform(<span class="number">0</span>, <span class="number">1</span>)</span><br><span class="line">                <span class="keyword">if</span> c &lt; self._compute_sampling_threshold(batches_seen):<span class="comment">#按照一定的概率决定是否选择标签</span></span><br><span class="line">                    decoder_input = labels[t]</span><br><span class="line">        outputs = torch.stack(outputs)</span><br><span class="line">        <span class="keyword">return</span> outputs</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">forward</span>(<span class="params">self, inputs, labels=<span class="literal">None</span>, batches_seen=<span class="literal">None</span></span>):</span></span><br><span class="line">        <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">        Seq2Seq模型前向传播</span></span><br><span class="line"><span class="string">        :参数 inputs: shape (seq_len, batch_size, num_sensor * input_dim)</span></span><br><span class="line"><span class="string">        :参数 labels: shape (horizon, batch_size, num_sensor * output)</span></span><br><span class="line"><span class="string">        :参数 batches_seen: batches seen till now</span></span><br><span class="line"><span class="string">        :返回值: output: (self.horizon, batch_size, self.num_nodes * self.output_dim)</span></span><br><span class="line"><span class="string">        &quot;&quot;&quot;</span></span><br><span class="line">        encoder_hidden_state = self.encoder(inputs)</span><br><span class="line">        self._logger.debug(<span class="string">&quot;Encoder complete, starting decoder&quot;</span>)</span><br><span class="line">        outputs = self.decoder(encoder_hidden_state, labels, batches_seen=batches_seen)</span><br><span class="line">        self._logger.debug(<span class="string">&quot;Decoder complete&quot;</span>)</span><br><span class="line">        <span class="keyword">if</span> batches_seen == <span class="number">0</span>:</span><br><span class="line">            self._logger.info(</span><br><span class="line">                <span class="string">&quot;Total trainable parameters &#123;&#125;&quot;</span>.<span class="built_in">format</span>(count_parameters(self))</span><br><span class="line">            )</span><br><span class="line">        <span class="keyword">return</span> outputs</span><br></pre></td></tr></table></figure>
+<h4 id="dcrnn-cell-py"><a href="#dcrnn-cell-py" class="headerlink" title="dcrnn_cell.py"></a>dcrnn_cell.py</h4><p>dcrnn_cell实现了论文中的DCGRU，它将卷积融合到了GRU里面。具体结构如下:</p>
+<p><img src="./cell.png" alt="cell"></p>
+<p>它实现了论文中的如下部分：</p>
+<p><img src="./1.png" style="zoom:70%;" /></p>
+<p>(1)实现初始化</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, num_units, adj_mx, max_diffusion_step,num_nodes,num_proj=<span class="literal">None</span>,activation=tf.nn.tanh,reuse=<span class="literal">None</span>, filter_type=<span class="string">&quot;laplacian&quot;</span>,use_gc_for_ru=<span class="literal">True</span></span>):</span></span><br></pre></td></tr></table></figure>
+<p>该函数实现了GRU模块成员变量的初始化，包括units数量，路网图距离权重邻接矩阵，扩散步数，节点数量。输入参数num_units表示每个cell中units的数量，参与后面state_size(self,)，output_size(self)的计算；输入参数adj_mx对应速度检测站之间的归一化后的距离权重邻接矩阵；输入参数max_diffusion_step表示允许的最大随机游走的步数；输入参数num_nodes表示速度检测站节点的数量；输入参数num_proj 代表预测结果的数量（如num_proj=1表示预测1个结果，num_proj=2表示预测2个结果）。如果num_proj不为空（None），即到了最后一层cell_with_projection，GRU模块在计算后会进行预测。</p>
+<p>(2)实现基于图卷积的随机游走函数</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">_gconv</span>(<span class="params">self, inputs, state, output_size, bias_start=<span class="number">0.0</span></span>):</span></span><br><span class="line">  <span class="comment"># 把输入和特征向量转换成 (batch_size, num_nodes, input_dim/state_dim)</span></span><br><span class="line">  batch_size = inputs.shape[<span class="number">0</span>]</span><br><span class="line">  inputs = torch.reshape(inputs, (batch_size, self._num_nodes, -<span class="number">1</span>))</span><br><span class="line">  state = torch.reshape(state, (batch_size, self._num_nodes, -<span class="number">1</span>))</span><br><span class="line">  inputs_and_state = torch.cat([inputs, state], dim=<span class="number">2</span>)</span><br><span class="line">  input_size = inputs_and_state.size(<span class="number">2</span>)</span><br><span class="line"></span><br><span class="line">  x = inputs_and_state</span><br><span class="line">  x0 = x.permute(<span class="number">1</span>, <span class="number">2</span>, <span class="number">0</span>)  <span class="comment"># (num_nodes, total_arg_size, batch_size)</span></span><br><span class="line">  x0 = torch.reshape(x0, shape=[self._num_nodes, input_size * batch_size])</span><br><span class="line">  x = torch.unsqueeze(x0, <span class="number">0</span>)</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> self._max_diffusion_step == <span class="number">0</span>:</span><br><span class="line">    <span class="keyword">pass</span></span><br><span class="line">  <span class="keyword">else</span>:</span><br><span class="line">    <span class="keyword">for</span> support <span class="keyword">in</span> self._supports:</span><br><span class="line">      x1 = torch.sparse.mm(support, x0)</span><br><span class="line">      x = self._concat(x, x1)</span><br><span class="line"></span><br><span class="line">      <span class="keyword">for</span> k <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">2</span>, self._max_diffusion_step + <span class="number">1</span>):</span><br><span class="line">        x2 = <span class="number">2</span> * torch.sparse.mm(support, x1) - x0</span><br><span class="line">        x = self._concat(x, x2)</span><br><span class="line">        x1, x0 = x2, x1</span><br><span class="line"></span><br><span class="line">        num_matrices = <span class="built_in">len</span>(self._supports) * self._max_diffusion_step + <span class="number">1</span></span><br><span class="line">        x = torch.reshape(x, shape=[num_matrices, self._num_nodes, input_size, batch_size])</span><br><span class="line">        x = x.permute(<span class="number">3</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">0</span>)  <span class="comment"># (batch_size, num_nodes, input_size, order)</span></span><br><span class="line">        x = torch.reshape(x, shape=[batch_size * self._num_nodes, input_size * num_matrices])</span><br><span class="line"></span><br><span class="line">        weights = self._gconv_params.get_weights((input_size * num_matrices, output_size))</span><br><span class="line">        x = torch.matmul(x, weights)  <span class="comment"># (batch_size * self._num_nodes, output_size)</span></span><br><span class="line"></span><br><span class="line">        biases = self._gconv_params.get_biases(output_size, bias_start)</span><br><span class="line">        x += biases</span><br><span class="line">        <span class="comment"># 把结果转换成 2D: (batch_size, num_node, state_dim) -&gt; (batch_size, num_node * state_dim)</span></span><br><span class="line">        <span class="keyword">return</span> torch.reshape(x, [batch_size, self._num_nodes * output_size])</span><br></pre></td></tr></table></figure>
+<p>这里实现了论文中的扩散卷积方法。首先将input和state拼接为input_state，即论文中的，将input_state和random_walk_mx进行max_diffusion_step次图卷积，结果是max_diffusion_step步随机游走的结果，然后用将乘以一个weights矩阵把维度变换为output_size。首先对input和state进行计算，对计算结果进行nn.sigmoid()激活。这里的和为GRU模型中的reset_gate和update_gate。然后计算GRU核，如果存在激活函数，则。计算新的输出和状态 ，除非到了最后一层cell_with_projection，否则output总是和new_state是一样的。判断是否需要输出预测值，如果不需要，则直接返回output，new_state。如果需要进行预测，将output乘以一个w矩阵将维度变换为output_size，最后返回output，new_state。</p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢支持！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.jpeg" alt="LeeZePeng 微信支付">
+        <p>微信支付</p>
+      </div>
+
+  </div>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E4%BA%A4%E9%80%9A%E6%B5%81/" rel="tag"># 交通流</a>
+              <a href="/tags/%E4%BB%A3%E7%A0%81%E8%A7%A3%E6%9E%90/" rel="tag"># 代码解析</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/03/13/%E4%BA%A4%E9%80%9A%E6%B5%81Seq2Seq12%E7%AF%87/" rel="prev" title="交通流Seq2Seq12篇">
+      <i class="fa fa-chevron-left"></i> 交通流Seq2Seq12篇
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#DCRNN-PyTorch%E4%BB%A3%E7%A0%81%E8%A7%A3%E6%9E%90"><span class="nav-number">1.</span> <span class="nav-text">DCRNN_PyTorch代码解析</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E4%BD%93%E6%A1%86%E6%9E%B6"><span class="nav-number">1.1.</span> <span class="nav-text">总体框架</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BF%90%E8%A1%8C%E8%AF%B4%E6%98%8E"><span class="nav-number">1.2.</span> <span class="nav-text">运行说明</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9C%80%E8%A6%81%E5%AE%89%E8%A3%85%E7%9A%84%E4%BE%9D%E8%B5%96"><span class="nav-number">1.2.1.</span> <span class="nav-text">需要安装的依赖</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%8Etensorflow%E7%9A%84%E6%95%88%E7%8E%87%E6%AF%94%E8%BE%83"><span class="nav-number">1.2.2.</span> <span class="nav-text">与tensorflow的效率比较</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E9%A2%84%E5%A4%84%E7%90%86"><span class="nav-number">1.3.</span> <span class="nav-text">数据预处理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BF%90%E8%A1%8C%E9%A2%84%E8%AE%AD%E7%BB%83%E6%A8%A1%E5%9E%8B%E6%A8%A1%E5%9E%8B"><span class="nav-number">1.4.</span> <span class="nav-text">运行预训练模型模型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A8%A1%E5%9E%8B%E8%AE%AD%E7%BB%83"><span class="nav-number">1.5.</span> <span class="nav-text">模型训练</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A8%A1%E5%9E%8B%E8%AF%84%E4%BC%B0"><span class="nav-number">1.6.</span> <span class="nav-text">模型评估</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#PyTorch%E8%BF%90%E8%A1%8C%E7%BB%93%E6%9E%9C"><span class="nav-number">1.6.1.</span> <span class="nav-text">PyTorch运行结果</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#scripts%E6%96%87%E4%BB%B6"><span class="nav-number">1.7.</span> <span class="nav-text">scripts文件</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#gen-adj-mx-py"><span class="nav-number">1.7.1.</span> <span class="nav-text">gen_adj_mx.py</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#generate-training-data-py"><span class="nav-number">1.7.2.</span> <span class="nav-text">generate_training_data.py</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#model%E6%96%87%E4%BB%B6"><span class="nav-number">1.7.3.</span> <span class="nav-text">model文件</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#dcrnn-supervisor-py"><span class="nav-number">1.7.3.1.</span> <span class="nav-text">dcrnn_supervisor.py</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#dcrnn-model-py"><span class="nav-number">1.7.3.2.</span> <span class="nav-text">dcrnn_model.py</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#dcrnn-cell-py"><span class="nav-number">1.7.3.3.</span> <span class="nav-text">dcrnn_cell.py</span></a></li></ol></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="LeeZePeng"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">LeeZePeng</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">9</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/LeeZePeng" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;LeeZePeng" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/csuleeh@163.com" title="E-Mail → csuleeh@163.com"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">LeeZePeng</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">49k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">45 分钟</span>
+</div>
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>-->
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '43f3d7c5d73827d0ee37',
+      clientSecret: '838a9b66d5cf233f002289464ea0a474df67ce1d',
+      repo        : 'discuss',
+      owner       : 'LeeZePeng',
+      admin       : ['LeeZePeng'],
+      id          : '19bdb36abfae6fca030c2fb119d189f3',
+        language: 'zh-CN',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+</body>
+</html>
