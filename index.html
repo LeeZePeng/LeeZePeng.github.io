@@ -189,7 +189,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2021-03-13 15:20:30 / 修改时间：16:21:27" itemprop="dateCreated datePublished" datetime="2021-03-13T15:20:30+08:00">2021-03-13</time>
+              <time title="创建时间：2021-03-13 15:20:30 / 修改时间：16:24:20" itemprop="dateCreated datePublished" datetime="2021-03-13T15:20:30+08:00">2021-03-13</time>
             </span>
 
           <br>
@@ -198,7 +198,7 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>2.2k</span>
+              <span>2.1k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -236,41 +236,14 @@
 <li>我们提出了一个新的模型NGNN，它可以更好地模拟图中的节点交互，并学习更好的节点表示。利用NGNN，我们不仅可以从<strong>视觉或文本</strong>的模态，而且可以从多种模态建模服装的兼容性。</li>
 <li>在一个真实数据集(Polyvore数据集)上的实验结果证明了我们的方法比其他方法的巨大优越性。</li>
 </ul>
-<p>&lt; !– more –&gt;</p>
-<h2 id="流程总览"><a href="#流程总览" class="headerlink" title="流程总览"></a>流程总览</h2><p><img src="https://cdn.nlark.com/yuque/0/2020/png/1842325/1597039788378-f0078c12-9f4f-4e65-9fc6-c8e23e0a2939.png?x-oss-process=image/resize,w_1028" alt="image.png"><br>图1：NGNN模型总览<br>首先将单品（衣服、裤子、鞋子、包）的<strong>图片及其文本描述</strong>（Polyvore数据集中有对单品材质颜色等描述）输入表示层，得到每件单品的特征向量，将特征向量与我们的图（每个节点代表一个类别，每条边代表两个节点之间的交互。一套服装(如毛衣、短衫、凉鞋、肩包)可以用子图表示。）对应起来作为节点的特征向量并提取子图，利用改进的GGNN的传播方法进行节点间信息的传播，将传播后的特征向量通过注意力层计算相容性评分。</p>
-<h2 id="图的构建"><a href="#图的构建" class="headerlink" title="图的构建"></a>图的构建</h2><ul>
-<li>节点：单品类别，如太阳镜，短裤，项链。</li>
-<li>节点对应特征向量：<ol>
-<li>视觉特性：利用高级深度卷积神经网络GoogleNet InceptionV3模型提取视觉特征，并采用线性层输出作为视觉特征。每个项目的视觉特征是一个2048维的向量。</li>
-<li>文本特性：首先根据数据集中标题的单词构造一个词汇表。因为有很多无意义的单词，比如“a”、“an”和“de”，我们会过滤掉少于3个字符的单词。最后，我们获得了一个包含2757个单词的词汇表，因此我们将每个条目的文本特征表示为一个2757维布尔向量。</li>
-</ol>
-</li>
-<li>边：如果两种单品类别在数据集中同时出现，则添加两条有向边，因为两个方向上的交互作用应该是不同的。比如我们不会为了匹配一双袜子而买鞋子，而是为了匹配一双鞋子而买袜子。</li>
-<li>边的权重计算：利用词频的方法：</li>
-</ul>
-<p><img src="https://cdn.nlark.com/yuque/0/2020/png/1842325/1597041336396-d9edb972-43ea-4446-be4d-8e49eb75e0e1.png" alt="image.png" style="zoom:70%;" />(1)<br>其中w(ni,nj)为ni到nj的边权值，Countcicj 为类别ci和cj共现频率是多少，Countcj 为类别cj的出现频率。</p>
-<h2 id="Node-wise-Graph-Neural-Network"><a href="#Node-wise-Graph-Neural-Network" class="headerlink" title="Node-wise Graph Neural Network"></a>Node-wise Graph Neural Network</h2><h3 id="节点的初始化"><a href="#节点的初始化" class="headerlink" title="节点的初始化"></a>节点的初始化</h3><p>在NGNN中，每个节点ni都与一个隐藏状态向量hi相关联，并动态更新。NGNN的输入是单品的特征向量(图片或文本的特征向量)，可用于初始化对应节点的状态。对于每一单品vi，我们首先将其特征fi映射到一个大小为d的潜在风格空间。考虑到类别之间的差异，我们对每个类别ci都有一个线性映射矩阵Wih。因此，我们可以得到单品vi在潜在空间中的表示为:<br><img src="https://cdn.nlark.com/yuque/0/2020/png/1842325/1597042454519-cae580b3-bf84-442a-b563-29fd7cd4a43b.png?x-oss-process=image%2Fresize%2Cw_94" alt="image.png" style="zoom:67%;" /><br><img src="https://cdn.nlark.com/yuque/0/2020/png/1842325/1597042590414-972c82f3-d1fc-4f85-8241-f868958bcf4b.png?x-oss-process=image%2Fresize%2Cw_124" alt="image.png" style="zoom:67%;" /></p>
-<p>因此，节点状态的大小为d。</p>
-<h3 id="节点间信息传播"><a href="#节点间信息传播" class="headerlink" title="节点间信息传播"></a>节点间信息传播</h3><p>GGNN与本模型的比较：<br><img src="https://cdn.nlark.com/yuque/0/2020/png/1842325/1597043017623-6d1f1aa1-ce45-4254-ad5b-b5d3fb696a69.png" alt="image.png"><br>即让每条边都有自己的权值和偏差Wp和bp。但是，它会占用图中大量边的参数空间，不能应用在大尺度图上。为了解决上述问题，对于NGNN中的每个节点ni，我们定义输出矩阵Wouti和一个输入矩阵Wini。<br>同样的，在接收到状态信息ait后，节点ni的状态将更新为:<br><img src="https://cdn.nlark.com/yuque/0/2020/png/1842325/1597044053826-80e2fc73-aa1b-448b-a8ff-a6483a39ac2c.png" alt="image.png"><br>其中，Wz、Wr、Wh、bz、br、bh为更新函数的权值和偏值。经过T个传播步骤，我们可以得到节点的最终状态，这也是节点的最终表示。</p>
-<h3 id="基于注意机制的兼容性计算"><a href="#基于注意机制的兼容性计算" class="headerlink" title="基于注意机制的兼容性计算"></a>基于注意机制的兼容性计算</h3><div  align="center"><img src="https://cdn.nlark.com/yuque/0/2020/png/1842325/1597044189735-18d5a6a7-32b8-4678-afc8-57740688c62f.png?x-oss-process=image%2Fresize%2Cw_230" alt="image.png" style="zoom:67%;" /></div>
-
-<p>θ(·) 和 δ(·)分别是两个重要性网络，前者学出每个单品的权重，后者学出单品的评分。α(·) 和σ(·) 是 leaky relu 和 sigmoid函数。</p>
-<h3 id="损失函数"><a href="#损失函数" class="headerlink" title="损失函数"></a>损失函数</h3><p>本文将数据集中同时出现的单品作为正样本的集合 S+，把单品的随机组合作为负样本的集合 S- 。损失函数如下：</p>
-<div align=center> <img src="https://cdn.nlark.com/yuque/0/2020/png/1842325/1597044826770-377b8f82-bdc4-4f9b-81e6-8e925d8600f9.png" width = 30%/> </div>
-
-<div align=center> <img src="https://cdn.nlark.com/yuque/0/2020/png/1842325/1597044851756-51d9a66f-d276-48ec-b3bc-56cbc7ca6084.png" width = 30%/> </div>
-
-<p>对于既输入图片特征，又输入文本特征的情况：</p>
-<div align=center> <img src="https://cdn.nlark.com/yuque/0/2020/png/1842325/1597044984089-fd19368a-075c-4355-9fc1-ea85b0689c83.png" width = 30%/> </div>
-
-<div align=center> <img src="https://cdn.nlark.com/yuque/0/2020/png/1842325/1597045007719-c7a16b2d-cea2-4428-9853-5b0f423083c0.png?x-oss-process=image%2Fresize%2Cw_244" width = 30%/> </div>
-
-<p>r已经在上文中定义。</p>
-<h3 id="实验结果"><a href="#实验结果" class="headerlink" title="实验结果"></a>实验结果</h3><div align=center> <img src="https://cdn.nlark.com/yuque/0/2020/png/1842325/1597045096603-7048b13e-b6a8-4f90-a2ee-48985596bd74.png" width = 60%/> </div>
-
-<div align=center> <img src="https://cdn.nlark.com/yuque/0/2020/png/1842325/1597045122733-fa10bf83-9261-4ee0-bf6c-fb0a606a9bd1.png" width = 30%/><img src="https://cdn.nlark.com/yuque/0/2020/png/1842325/1597045132882-289c08fa-7e5e-4263-a4c9-172323923dbe.png" width = 30%/> </div>
-
-
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2021/03/13/%E6%9A%91%E6%9C%9Faifashion%E9%A1%B9%E7%9B%AE-Dressing-as-a-Whole-Outfit-Compatibility-Learning-Based-on-Node-wise-Graph-Neural-Networks/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
