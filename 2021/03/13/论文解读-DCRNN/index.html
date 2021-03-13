@@ -40,7 +40,7 @@
 <meta property="og:image" content="https://leezepeng.github.io/2021/03/13/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB-DCRNN/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB-DCRNN/fig/Fig6.JPG">
 <meta property="og:image" content="https://leezepeng.github.io/2021/03/13/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB-DCRNN/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB-DCRNN/fig/Fig7.JPG">
 <meta property="article:published_time" content="2021-03-13T09:10:17.000Z">
-<meta property="article:modified_time" content="2021-03-13T09:22:12.373Z">
+<meta property="article:modified_time" content="2021-03-13T11:37:26.354Z">
 <meta property="article:author" content="LeeZePeng">
 <meta property="article:tag" content="论文详解">
 <meta property="article:tag" content="交通流">
@@ -210,7 +210,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2021-03-13 17:10:17 / 修改时间：17:22:12" itemprop="dateCreated datePublished" datetime="2021-03-13T17:10:17+08:00">2021-03-13</time>
+              <time title="创建时间：2021-03-13 17:10:17 / 修改时间：19:37:26" itemprop="dateCreated datePublished" datetime="2021-03-13T17:10:17+08:00">2021-03-13</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -255,7 +255,9 @@
 
       
         <h1 id="DCRNN"><a href="#DCRNN" class="headerlink" title="DCRNN"></a>DCRNN</h1><h1 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h1><p>交通预测的挑战：1. 对路网复杂的空间依赖关系， 2. 路况变换与非线性的时间动态性， 3. 长期预测的困难性。我们提出了在有向图上对交通流以扩散形式进行建模的方法，介绍了 <em>Diffusion Convolutional Recurrent Neural Network</em>(DCRNN)，用于交通预测的深度学习框架，同时集成了交通流中的空间与时间依赖。DCRNN 使用图上的双向随机游走捕获了空间依赖，使用编码解码框架以及 scheduled sampling 捕获时间依赖。我们在两个真实的交通数据集上评估了模型，比 state-of-the-art 强了12%-15%。</p>
-<h1 id="1-引言"><a href="#1-引言" class="headerlink" title="1 引言"></a>1 引言</h1><p>对一个在动态系统中运行的学习系统来说，时空预测是一个很关键的任务。自动驾驶、电网优化、供应链管理等都是它的应用。我们研究了一个重要的任务：路网上的交通预测，这是智能交通系统中的核心部分。目标是给定历史车速与路网数据，预测未来的车速。</p>
+<h1 id="1-引言"><a href="#1-引言" class="headerlink" title="1 引言"></a>1 引言</h1><span id="more"></span>
+
+<p>对一个在动态系统中运行的学习系统来说，时空预测是一个很关键的任务。自动驾驶、电网优化、供应链管理等都是它的应用。我们研究了一个重要的任务：路网上的交通预测，这是智能交通系统中的核心部分。目标是给定历史车速与路网数据，预测未来的车速。</p>
 <p>任务有挑战性的原因是复杂的时空依赖关系以及长期预测的上的难度。一方面，交通数据序列表现出了强烈的时间动态性(temporal dynamics)。反复的事件如高峰期或交通事故导致了数据的非平稳性，使得长期预测很困难。另一方面，路网上的监测器包含了复杂但是唯一的空间联系(spatial correlations)。图1展示了一个例子。路1和路2是相关联的，但是路1和路3没有关联。尽管路1和路3在欧氏空间中很近，但是他们表现出了不同的形式。此外，未来的车速更容易受到下游交通的影响，而非上游。这就意味着交通上的空间结构不是欧氏空间的，而是有向的。</p>
 <p><img src="./%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB-DCRNN/fig/Fig1.JPG" alt="Fig1"></p>
 <p>交通预测已经研究了几十年，有两个主要类别：知识驱动的方法和数据驱动的方法。在运输和操作研究中，知识驱动的方法经常使用排队论，模拟交通中的用户行为(Cascetta, 2013)。时间序列社区中，数据驱动的方法如 Auto-Regressive Integrated Moving Average(ARIMA) 模型，Kalman filtering 还是很流行的(Liu et al., 2011; Lippi et al., 2013)。然而，简单的时间序列模型通常依赖平稳假设，这经常与实际交通数据不符。最近开始在交通预测上应用深度学习模型 (Lv et al., 2015; Yu et al., 2017b) ，但是没有考虑空间结构。Wu &amp; Tan 2016和Ma et al. 2017 使用 CNN 对空间关系进行建模，但是在欧氏空间中的。Bruna et al. 2014，Defferrard et al. 2016 研究了图卷积，但是只能处理无向图。</p>
