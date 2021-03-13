@@ -22,14 +22,14 @@
     var CONFIG = {"hostname":"leezepeng.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
-  <meta name="description" content="国内外研究的不足：对兼容性的评估方法的不足： McAuley等人使用低秩马氏变换(LMT)将单品映射到一个潜在空间，在这个空间中，可兼容的物品距离更近。     Veit等人提出使用端到端SiameseCNNs学习距离度量。 还有一些研究将单品映射到多个潜在空间中，共同对这些潜在空间中的距离进行建模，从而可以衡量物品在不同方面的相容性。  这些方法都有一个共同的缺陷，这些工作只注重两两单品的搭配，">
+  <meta name="description" content="国内外研究的不足：对兼容性的评估方法的不足： McAuley等人使用低秩马氏变换(LMT)将单品映射到一个潜在空间，在这个空间中，可兼容的物品距离更近。     Veit等人提出使用端到端SiameseCNNs学习距离度量。 还有一些研究将单品映射到多个潜在空间中，共同对这些潜在空间中的距离进行建模，从而可以衡量物品在不同方面的相容性。  这些方法都有一个共同的缺陷，这些工作只注重两两单品的搭配，">
 <meta property="og:type" content="article">
 <meta property="og:title" content="暑期aifashion项目-Dressing as a Whole: Outfit Compatibility Learning Based on Node-wise Graph Neural Networks">
 <meta property="og:url" content="https://leezepeng.github.io/2021/03/13/%E6%9A%91%E6%9C%9Faifashion%E9%A1%B9%E7%9B%AE-Dressing-as-a-Whole-Outfit-Compatibility-Learning-Based-on-Node-wise-Graph-Neural-Networks/index.html">
 <meta property="og:site_name" content="LeeZePeng&#39;s Blog">
-<meta property="og:description" content="国内外研究的不足：对兼容性的评估方法的不足： McAuley等人使用低秩马氏变换(LMT)将单品映射到一个潜在空间，在这个空间中，可兼容的物品距离更近。     Veit等人提出使用端到端SiameseCNNs学习距离度量。 还有一些研究将单品映射到多个潜在空间中，共同对这些潜在空间中的距离进行建模，从而可以衡量物品在不同方面的相容性。  这些方法都有一个共同的缺陷，这些工作只注重两两单品的搭配，">
+<meta property="og:description" content="国内外研究的不足：对兼容性的评估方法的不足： McAuley等人使用低秩马氏变换(LMT)将单品映射到一个潜在空间，在这个空间中，可兼容的物品距离更近。     Veit等人提出使用端到端SiameseCNNs学习距离度量。 还有一些研究将单品映射到多个潜在空间中，共同对这些潜在空间中的距离进行建模，从而可以衡量物品在不同方面的相容性。  这些方法都有一个共同的缺陷，这些工作只注重两两单品的搭配，">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2020/png/1842325/1597039788378-f0078c12-9f4f-4e65-9fc6-c8e23e0a2939.png?x-oss-process=image/resize,w_1028">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2020/png/1842325/1597039788378-f0078c12-9f4f-4e65-9fc6-c8e23e0a2939.png?x-oss-process=image%2Fresize%2Cw_1028">
 <meta property="og:image" content="https://cdn.nlark.com/yuque/0/2020/png/1842325/1597041336396-d9edb972-43ea-4446-be4d-8e49eb75e0e1.png">
 <meta property="og:image" content="https://cdn.nlark.com/yuque/0/2020/png/1842325/1597042454519-cae580b3-bf84-442a-b563-29fd7cd4a43b.png?x-oss-process=image%2Fresize%2Cw_94">
 <meta property="og:image" content="https://cdn.nlark.com/yuque/0/2020/png/1842325/1597042590414-972c82f3-d1fc-4f85-8241-f868958bcf4b.png?x-oss-process=image%2Fresize%2Cw_124">
@@ -49,7 +49,7 @@
 <meta property="article:tag" content="论文详解">
 <meta property="article:tag" content="aifashion">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://cdn.nlark.com/yuque/0/2020/png/1842325/1597039788378-f0078c12-9f4f-4e65-9fc6-c8e23e0a2939.png?x-oss-process=image/resize,w_1028">
+<meta name="twitter:image" content="https://cdn.nlark.com/yuque/0/2020/png/1842325/1597039788378-f0078c12-9f4f-4e65-9fc6-c8e23e0a2939.png?x-oss-process=image%2Fresize%2Cw_1028">
 
 <link rel="canonical" href="https://leezepeng.github.io/2021/03/13/%E6%9A%91%E6%9C%9Faifashion%E9%A1%B9%E7%9B%AE-Dressing-as-a-Whole-Outfit-Compatibility-Learning-Based-on-Node-wise-Graph-Neural-Networks/">
 
@@ -239,7 +239,7 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>2.1k</span>
+              <span>2.2k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -259,7 +259,7 @@
 
       
         <h2 id="国内外研究的不足："><a href="#国内外研究的不足：" class="headerlink" title="国内外研究的不足："></a>国内外研究的不足：</h2><h3 id="对兼容性的评估方法的不足："><a href="#对兼容性的评估方法的不足：" class="headerlink" title="对兼容性的评估方法的不足："></a>对兼容性的评估方法的不足：</h3><ul>
-<li>McAuley等人使用低秩马氏变换(LMT)将单品映射到一个潜在空间，在这个空间中，可兼容的物品距离更近。    </li>
+<li>McAuley等人使用低秩马氏变换(LMT)将单品映射到一个潜在空间，在这个空间中，可兼容的物品距离更近。    </li>
 <li>Veit等人提出使用端到端SiameseCNNs学习距离度量。</li>
 <li>还有一些研究将单品映射到多个潜在空间中，共同对这些潜在空间中的距离进行建模，从而可以衡量物品在不同方面的相容性。</li>
 </ul>
@@ -272,13 +272,13 @@
 <p>这些方法也有个共同缺陷，<strong>单品的顺序不存在固定的。更重要的是，服装中物品之间的关系并不是有序的，因为物品在序列中不仅与其前面的单品有关系与后面的单品也有关系。</strong></p>
 <h3 id="对图结构数据处理方式的不足："><a href="#对图结构数据处理方式的不足：" class="headerlink" title="对图结构数据处理方式的不足："></a>对图结构数据处理方式的不足：</h3><h4 id="节点间的信息传递问题："><a href="#节点间的信息传递问题：" class="headerlink" title="节点间的信息传递问题："></a>节点间的信息传递问题：</h4><p>Gori等人首先提出了图神经网络(GNN)，将前馈神经网络递归应用于图中的每个节点。节点通过传递它们的状态信息与其他节点进行交互。Scarselli等人利用多层感知(MLP)更新节点的隐藏状态。然而，在图中<strong>信息的远距离传播存在问题</strong>。</p>
 <h4 id="图数据大且复杂导致的问题："><a href="#图数据大且复杂导致的问题：" class="headerlink" title="图数据大且复杂导致的问题："></a>图数据大且复杂导致的问题：</h4><p>为解决节点间信息的远距离传播导致信息消亡的问题，Li等人通过引入门控递归单元(GRU)来更新节点，提出了门控图神经网络(GGNN)。然而，该算法<strong>仅适用于无向图，不能模拟两节点有向边之间复杂而灵活的信息传递。</strong></p>
-<h2 id="本文的贡献"><a href="#本文的贡献" class="headerlink" title="本文的贡献"></a>本文的贡献</h2><p><strong>为解决上述问题，作者提出了一个新的模型<strong><strong>NGNN</strong></strong>，它可以更好地模拟节点的交互，从而更好地从图中推断套装的兼容性。在NGNN中，每条边的状态信息传递是不同的。它可以用节点的参数来建模沿边的信息传递。</strong></p>
+<h2 id="本文的贡献"><a href="#本文的贡献" class="headerlink" title="本文的贡献"></a>本文的贡献</h2><p><strong>为解决上述问题，作者提出了一个新的模型**</strong>NGNN<strong>**，它可以更好地模拟节点的交互，从而更好地从图中推断套装的兼容性。在NGNN中，每条边的状态信息传递是不同的。它可以用节点的参数来建模沿边的信息传递。</strong></p>
 <ul>
 <li>据我们所知，这是第一次尝试用本文的图结构来表示套装，它可以更好地捕捉服装中多个元素之间的复杂关系。</li>
 <li>我们提出了一个新的模型NGNN，它可以更好地模拟图中的节点交互，并学习更好的节点表示。利用NGNN，我们不仅可以从<strong>视觉或文本</strong>的模态，而且可以从多种模态建模服装的兼容性。</li>
 <li>在一个真实数据集(Polyvore数据集)上的实验结果证明了我们的方法比其他方法的巨大优越性。</li>
 </ul>
-<h2 id="流程总览"><a href="#流程总览" class="headerlink" title="流程总览"></a>流程总览</h2><p><img src="https://cdn.nlark.com/yuque/0/2020/png/1842325/1597039788378-f0078c12-9f4f-4e65-9fc6-c8e23e0a2939.png?x-oss-process=image/resize,w_1028" alt="image.png"><br>图1：NGNN模型总览<br>首先将单品（衣服、裤子、鞋子、包）的<strong>图片及其文本描述</strong>（Polyvore数据集中有对单品材质颜色等描述）输入表示层，得到每件单品的特征向量，将特征向量与我们的图（每个节点代表一个类别，每条边代表两个节点之间的交互。一套服装(如毛衣、短衫、凉鞋、肩包)可以用子图表示。）对应起来作为节点的特征向量并提取子图，利用改进的GGNN的传播方法进行节点间信息的传播，将传播后的特征向量通过注意力层计算相容性评分。</p>
+<h2 id="流程总览"><a href="#流程总览" class="headerlink" title="流程总览"></a>流程总览</h2><p><img src="https://cdn.nlark.com/yuque/0/2020/png/1842325/1597039788378-f0078c12-9f4f-4e65-9fc6-c8e23e0a2939.png?x-oss-process=image%2Fresize%2Cw_1028" alt="image.png"><br>图1：NGNN模型总览<br>首先将单品（衣服、裤子、鞋子、包）的<strong>图片及其文本描述</strong>（Polyvore数据集中有对单品材质颜色等描述）输入表示层，得到每件单品的特征向量，将特征向量与我们的图（每个节点代表一个类别，每条边代表两个节点之间的交互。一套服装(如毛衣、短衫、凉鞋、肩包)可以用子图表示。）对应起来作为节点的特征向量并提取子图，利用改进的GGNN的传播方法进行节点间信息的传播，将传播后的特征向量通过注意力层计算相容性评分。</p>
 <h2 id="图的构建"><a href="#图的构建" class="headerlink" title="图的构建"></a>图的构建</h2><ul>
 <li>节点：单品类别，如太阳镜，短裤，项链。</li>
 <li>节点对应特征向量：<ol>
