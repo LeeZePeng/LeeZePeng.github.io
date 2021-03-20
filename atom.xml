@@ -6,7 +6,7 @@
   <link href="https://leezepeng.github.io/atom.xml" rel="self"/>
   
   <link href="https://leezepeng.github.io/"/>
-  <updated>2021-03-18T13:22:29.450Z</updated>
+  <updated>2021-03-19T16:11:49.441Z</updated>
   <id>https://leezepeng.github.io/</id>
   
   <author>
@@ -15,6 +15,32 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>scala安装与使用</title>
+    <link href="https://leezepeng.github.io/2021/03/19/scala%E5%AE%89%E8%A3%85%E4%B8%8E%E4%BD%BF%E7%94%A8/"/>
+    <id>https://leezepeng.github.io/2021/03/19/scala%E5%AE%89%E8%A3%85%E4%B8%8E%E4%BD%BF%E7%94%A8/</id>
+    <published>2021-03-19T15:58:41.000Z</published>
+    <updated>2021-03-19T16:11:49.441Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="安装好Spark"><a href="#安装好Spark" class="headerlink" title="安装好Spark"></a>安装好Spark</h2><p><img src="scala安装与使用/截屏2021-03-19 下午8.45.07.png" alt="截屏2021-03-19 下午8.45.07"></p><p><img src="scala安装与使用/截屏2021-03-19 下午8.46.18.png" alt="截屏2021-03-19 下午8.46.18"></p><p><img src="scala安装与使用/截屏2021-03-19 下午8.53.23-6169657.png" alt="截屏2021-03-19 下午8.53.23"></p><p><img src="scala安装与使用/截屏2021-03-19 下午8.56.03.png" alt="截屏2021-03-19 下午8.56.03"></p><p><img src="scala安装与使用/截屏2021-03-19 下午8.59.09.png" alt="截屏2021-03-19 下午8.59.09"></p><h2 id="在Spark-Shell下跑通WordCount"><a href="#在Spark-Shell下跑通WordCount" class="headerlink" title="在Spark Shell下跑通WordCount"></a>在Spark Shell下跑通WordCount</h2><p><img src="scala安装与使用/截屏2021-03-19 下午9.00.15.png" alt="截屏2021-03-19 下午9.00.15"></p><p><img src="scala安装与使用/截屏2021-03-19 下午9.10.41.png" alt="截屏2021-03-19 下午9.07.48"></p><p><img src="scala安装与使用/截屏2021-03-19 下午9.12.15.png" alt="截屏2021-03-19 下午9.12.15"></p><p> <img src="scala安装与使用/截屏2021-03-19 下午9.13.16.png" alt="截屏2021-03-19 下午9.13.16"></p><p><img src="scala安装与使用/截屏2021-03-19 下午9.14.12.png" alt="截屏2021-03-19 下午9.14.12"></p><p><img src="scala安装与使用/截屏2021-03-19 下午9.14.34.png" alt="截屏2021-03-19 下午9.14.34"></p><p><img src="scala安装与使用/截屏2021-03-19 下午9.15.38-6169748.png" alt="截屏2021-03-19 下午9.15.38"></p><p><img src="scala安装与使用/截屏2021-03-19 下午9.15.49.png" alt="截屏2021-03-19 下午9.15.49"></p><p><img src="scala安装与使用/截屏2021-03-19 下午9.17.02-6169769.png" alt="截屏2021-03-19 下午9.17.02"></p><p><img src="scala安装与使用/截屏2021-03-19 下午9.27.15-6169781.png" alt="截屏2021-03-19 下午9.27.15"></p><p><img src="scala安装与使用/截屏2021-03-19 下午9.35.10.png" alt="截屏2021-03-19 下午9.35.10"></p><p><img src="scala安装与使用/截屏2021-03-19 下午9.36.58.png" alt="截屏2021-03-19 下午9.36.58"></p><p><img src="scala安装与使用/截屏2021-03-19 下午11.27.09.png" alt="截屏2021-03-19 下午11.27.09"></p><h2 id="安装IDEA"><a href="#安装IDEA" class="headerlink" title="安装IDEA"></a>安装IDEA</h2><p><img src="scala安装与使用/截屏2021-03-19 下午11.08.19-6169876.png" alt="截屏2021-03-19 下午11.08.19"></p><p><img src="scala安装与使用/截屏2021-03-19 下午11.29.23-6169889.png" alt="截屏2021-03-19 下午11.29.23"></p><p><img src="scala安装与使用/截屏2021-03-19 下午11.30.05-6169902.png" alt="截屏2021-03-19 下午11.30.05"></p><p><img src="scala安装与使用/截屏2021-03-19 下午11.39.46-6169915.png" alt="截屏2021-03-19 下午11.39.46"></p><p><img src="scala安装与使用/截屏2021-03-19 下午11.41.12.png" alt="截屏2021-03-19 下午11.41.12"></p><p><img src="scala安装与使用/截屏2021-03-19 下午11.43.02-6169935.png" alt="截屏2021-03-19 下午11.43.02"></p><p><img src="scala安装与使用/截屏2021-03-19 下午11.44.03.png" alt="截屏2021-03-19 下午11.44.03"></p><h2 id="在IDEA中跑通WordCount"><a href="#在IDEA中跑通WordCount" class="headerlink" title="在IDEA中跑通WordCount"></a>在IDEA中跑通WordCount</h2><p><img src="scala安装与使用/截屏2021-03-19 下午11.49.25-6169958.png" alt="截屏2021-03-19 下午11.49.25"></p><p><img src="scala安装与使用/截屏2021-03-19 下午11.56.18-6169974.png" alt="截屏2021-03-19 下午11.56.18"></p>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h2 id=&quot;安装好Spark&quot;&gt;&lt;a href=&quot;#安装好Spark&quot; class=&quot;headerlink&quot; title=&quot;安装好Spark&quot;&gt;&lt;/a&gt;安装好Spark&lt;/h2&gt;&lt;p&gt;&lt;img src=&quot;scala安装与使用/截屏2021-03-19 下午8.45.07.pn</summary>
+      
+    
+    
+    
+    <category term="大数据编程" scheme="https://leezepeng.github.io/categories/%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%BC%96%E7%A8%8B/"/>
+    
+    
+    <category term="学习过程" scheme="https://leezepeng.github.io/tags/%E5%AD%A6%E4%B9%A0%E8%BF%87%E7%A8%8B/"/>
+    
+    <category term="大数据编程" scheme="https://leezepeng.github.io/tags/%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%BC%96%E7%A8%8B/"/>
+    
+  </entry>
   
   <entry>
     <title>算法技巧-动态规划解题框架</title>
